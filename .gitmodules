@@ -13,3 +13,9 @@
 [submodule "lib/prb-math"]
 	path = lib/prb-math
 	url = https://github.com/paulrberg/prb-math
+[submodule "lib/fuzzlib"]
+	path = lib/fuzzlib
+	url = https://github.com/perimetersec/fuzzlib
+[submodule "lib/solady"]
+	path = lib/solady
+	url = https://github.com/Vectorized/solady
