@@ -18,8 +18,6 @@ import {OracleDeployer} from "test/foundry/utils/OracleDeployer.sol";
 import {ShipmentDeployer} from "test/foundry/utils/ShipmentDeployer.sol";
 import {IWell, IERC20} from "contracts/interfaces/basin/IWell.sol";
 import {C} from "contracts/C.sol";
-import {LibAppStorage} from "contracts/libraries/LibAppStorage.sol";
-import {AppStorage} from "contracts/beanstalk/storage/AppStorage.sol";
 
 ///// COMMON IMPORTED LIBRARIES //////
 import {LibTransfer} from "contracts/libraries/Token/LibTransfer.sol";
@@ -32,6 +30,8 @@ import {Pipeline} from "contracts/pipeline/Pipeline.sol";
 import {IUSDC} from "contracts/interfaces/IUSDC.sol";
 
 import {IDiamondCut} from "contracts/interfaces/IDiamondCut.sol";
+import {LibDiamond} from "contracts/libraries/LibDiamond.sol";
+
 
 
 contract FuzzSetup is FunctionCalls {
@@ -46,7 +46,7 @@ contract FuzzSetup is FunctionCalls {
 
     // facet selectors
     bytes4[] depotSelects = [bytes4(0xb452c7ae), bytes4(0x6e47d07b), bytes4(0xcabec62b), bytes4(0x08e1a0ab), bytes4(0xdd756c4f)];
-    bytes4[] farmSelects = [bytes4(0x36bfafbd), bytes4(0x36bfafbd)];
+    bytes4[] farmSelects = [bytes4(0x36bfafbd), bytes4(0x300dd6cf)];
     bytes4[] tokenSelects = [bytes4(0xda3e3397), bytes4(0x0bc33ce4), bytes4(0xfdb28811), bytes4(0xb6fc38f9), bytes4(0xd4fac45d), bytes4(0x6a385ae9), bytes4(0x4667fa3d), bytes4(0xc3714723), bytes4(0x8a65d2e0), bytes4(0xa98edb17), bytes4(0xb39062e6), bytes4(0xbc197c81), bytes4(0xf23a6e61), bytes4(0x8e8758d8), bytes4(0xd3f4ec6f), bytes4(0x6204aa43), bytes4(0xbd32fac3), bytes4(0x1c059365)];
     bytes4[] tokenSupportSelects = [bytes4(0xa9412a59), bytes4(0x0a7e880c), bytes4(0x1aca6376)];
     bytes4[] tractorSelects = [bytes4(0x563957a8), bytes4(0x5723cc60), bytes4(0x5ebc32e6), bytes4(0x5993514b), bytes4(0x2be32f6a), bytes4(0x91a45154), bytes4(0x454972dd), bytes4(0x570ca735), bytes4(0xcc8a429d), bytes4(0xca1e71ae), bytes4(0xfe414fc8), bytes4(0x507cea25), bytes4(0xdf8d26bb), bytes4(0x04cb49dc)];
@@ -68,10 +68,7 @@ contract FuzzSetup is FunctionCalls {
     bytes4[] oracleSelects = [bytes4(0xd48274a0), bytes4(0x052c3990), bytes4(0x00593bcf), bytes4(0x054ce3bd), bytes4(0xc4c5140f), bytes4(0x8b7750c2), bytes4(0x399ff0b5), bytes4(0xdd455fbf)];
     bytes4[] seasonSelects = [bytes4(0xfd497a68), bytes4(0x64ee4b80), bytes4(0xca7b7d7b), bytes4(0xf1e2dfb0), bytes4(0xfc06d2a6)];
     bytes4[] seasonGettersSelects = [bytes4(0x2a27c499), bytes4(0x89a218d2), bytes4(0xe53b479e), bytes4(0x3cee5dea), bytes4(0x8097f0ca), bytes4(0x065cb594), bytes4(0x43e0156a), bytes4(0x57801d87), bytes4(0x70fd1b06), bytes4(0xda61af62), bytes4(0x44fb7cc3), bytes4(0x2507644c), bytes4(0xd1943f7f), bytes4(0x1eedbfbb), bytes4(0x1f48a553), bytes4(0x11a8d895), bytes4(0xab843b34), bytes4(0xb3c39ce5), bytes4(0xfd6d1483), bytes4(0xdd9330d2), bytes4(0x08fa96d3), bytes4(0x35870a7a), bytes4(0x4d65f762), bytes4(0x738ad142), bytes4(0xf07f0760), bytes4(0xcb677411), bytes4(0xbbf459a7), bytes4(0xf788b47c), bytes4(0xa13a3742), bytes4(0x93c9e531), bytes4(0xbf170533), bytes4(0x5c975abb), bytes4(0x3fccd20c), bytes4(0x8223eac8), bytes4(0x471bcdbe), bytes4(0xc1cf248f), bytes4(0x43def26e), bytes4(0xc50b0fb0), bytes4(0x3b2ecb70), bytes4(0x16ada547), bytes4(0x06c499d8), bytes4(0x0e3c557a), bytes4(0x4a2c357e), bytes4(0x686b6159), bytes4(0x597490c0)];
-    bytes4[] diamondCutSelects = [bytes4(0x1f931c1c)];
-    bytes4[] diamondLoupeSelects = [bytes4(0xcdffacc6), bytes4(0x52ef6b2c), bytes4(0xadfca15e), bytes4(0x7a0ed627), bytes4(0x01ffc9a7)];
     bytes4[] ownershipSelects = [bytes4(0x4e71e0c8), bytes4(0x8da5cb5b), bytes4(0x5f504a82), bytes4(0xf2fde38b)];
-    bytes4[] pauseSelects = [bytes4(0x8456cb59), bytes4(0x3f4ba83a)];
 
     int256[] initialPrices = [
         int256(1000e6), // ETH/USD
@@ -83,8 +80,6 @@ contract FuzzSetup is FunctionCalls {
 
     // deploy smart contracts
     function deploySampleContract() internal {
-
-        vm.startPrank(ADMIN);
 
         // Create Beanstalk Facets
         // farm
@@ -127,17 +122,17 @@ contract FuzzSetup is FunctionCalls {
         diamondLoupeFacet = new DiamondLoupeFacet();
         ownershipFacet = new OwnershipFacet();
         pauseFacet = new PauseFacet();
-        initDiamond = new InitDiamond();
+        initDiamond = new MockInitDiamond();
         diamond = new Diamond(address(diamondCutFacet));
 
         IDiamondCut.FacetCut[] memory cuts = _getCuts();
 
+        vm.prank(address(diamondCutFacet));
         IDiamondCut(address(diamond)).diamondCut(
             cuts,
             address(initDiamond),
-            abi.encodeWithSelector(initDiamond.init.selector)
+            abi.encodeWithSignature("init()")
         );
-
 
         // Create Ecosystem
         junction = new Junction();
@@ -161,34 +156,47 @@ contract FuzzSetup is FunctionCalls {
         pipeLine = new Pipeline();
 
         // Create Tokens
-        beanToken = new Bean();
+        // bytes memory bytecode = type(Bean).runtimeCode;
+        // bytes memory bytecode = type(Bean).creationCode;
+        // vm.etch(0xBEA0000029AD1c77D3d5D23Ba2D8893dB9d1Efab, bytecode);
+        beanToken = Bean(0xBEA0000029AD1c77D3d5D23Ba2D8893dB9d1Efab);
+        beanMock = MockToken(0xBEA0000029AD1c77D3d5D23Ba2D8893dB9d1Efab);
         weth = _deployToken(initERC20paramsFuzz("Weth", "WETH", 18));
         wstEth = _deployToken(initERC20paramsFuzz("wstETH", "WSTETH", 18));
         usdc = _deployToken(initERC20paramsFuzz("USDC", "USDC", 6));
         usdt = _deployToken(initERC20paramsFuzz("USDT", "USDT", 6));
         wbtc = _deployToken(initERC20paramsFuzz("WBTC", "WBTC", 6));
 
-        vm.stopPrank();
+        mockTokens = [beanMock, weth, wstEth, usdc, usdt, wbtc];
 
+        // gives ADMIN default admin role & minter role
+        bytes32 outerSlot = keccak256(abi.encode(beanToken.DEFAULT_ADMIN_ROLE(), uint256(5)));
+        bytes32 memberSlot = keccak256(abi.encode(ADMIN, outerSlot));
+        vm.store(address(beanToken), memberSlot, bytes32(uint256(1)));
+
+        vm.prank(ADMIN);
+        beanToken.grantRole(keccak256("MINTER_ROLE"), ADMIN);
 
         // Deploys CP2, Well Impl, Multi Flow Pump, Mock Pump, & Aquifier
         _deployBasin();
 
-        // Deploy bean eth well & bean wstEth well
+        // // Deploy bean eth well & bean wstEth well
         beanEthWell = IWell(_deployWell(0xBEA0e11282e2bB5893bEcE110cF199501e872bAd, weth));
         beanWstEthWell = IWell(_deployWell(0xBeA0000113B0d182f4064C86B71c315389E4715D, wstEth));
 
-        // Whitelist oracles
-        _whitelistOracle();
-
-        // Initialize shipping
-        _initShipping();
-        
         // Create Oracles & set initital price
         cl_eth_usd = _deployOracle(0);
         cl_wseth_eth = _deployOracle(1);
         cl_usdc_usd = _deployOracle(2);
         cl_wbtc_usd = _deployOracle(3);
+
+        // Whitelist oracles
+        _whitelistOracle();
+
+        // // Initialize shipping
+        _initShipping();
+        
+        uniFactory = new MockUniswapV3Factory();
 
         // Create Uniswap & set initital prices
         uni_wstEth_weth = _deployUniswapPool(address(wstEth), address(weth), 0);
@@ -275,13 +283,13 @@ contract FuzzSetup is FunctionCalls {
 
     // helper function to deploy ERC-20 tokens
     function _deployToken(initERC20paramsFuzz memory _token) internal returns(MockToken token) {
-        MockToken token = new MockToken(_token.name, _token.symbol);
+        token = new MockToken(_token.name, _token.symbol);
         MockToken(token).setDecimals(_token.decimals);
     }
 
     // helper function to deploy chainlink oracles
     function _deployOracle(uint256 _index) internal returns(MockChainlinkAggregator oracle) {
-        MockChainlinkAggregator oracle = new MockChainlinkAggregator();
+        oracle = new MockChainlinkAggregator();
         MockChainlinkAggregator(oracle).setDecimals(6);
 
         uint256 time;
@@ -299,7 +307,7 @@ contract FuzzSetup is FunctionCalls {
     // helper function to deploy uniswap pools            
     function _deployUniswapPool(address _token0, address _token1, uint256 _index) internal returns(MockUniswapV3Pool pool) {
         address poolAddress = uniFactory.createPool(_token0, _token1, 100);
-        MockUniswapV3Pool pool = MockUniswapV3Pool(poolAddress);
+        pool = MockUniswapV3Pool(poolAddress);        
 
         uint256 price = _calcPrice(uniPriceData[_index][0], uniPriceData[_index][1]);
         pool.setOraclePrice(price, uint8(uniPriceData[_index][1]));
@@ -321,29 +329,55 @@ contract FuzzSetup is FunctionCalls {
         price = x / (_price + 1);
     }
 
-
     // deploy CP2, Well, Multi Flow Pump, & Aquifier
+    // @note uncomment these for foundry tests  
     function _deployBasin() internal {
         // get CP2 creation code & deploy
-        bytes memory cp2CreationCode = vm.getCode("./node_modules/@beanstalk/wells1.2/out/ConstantProduct2.sol/ConstantProduct2.json");
-        vm.etch(0xBA510C20FD2c52E4cb0d23CFC3cCD092F9165a6E, abi.encodePacked(cp2CreationCode, bytes("")));
-        cp2 = ICP2(0xBA510C20FD2c52E4cb0d23CFC3cCD092F9165a6E);
-        
-        // get Multi Flow Pump creation code & deploy
-        bytes memory multiFlowPumpCreationCode = vm.getCode("./node_modules/@beanstalk/wells1.2/out/MultiFlowPump.sol/MultiFlowPump.json");
-        vm.etch(0xBA510f10E3095B83a0F33aa9ad2544E22570a87C, abi.encodePacked(multiFlowPumpCreationCode, abi.encode(bytes16(0x3ff50624dd2f1a9fbe76c8b439581062), bytes16(0x3ff505e1d27a3ee9bffd7f3dd1a32671), uint256(12), bytes16(0x3ffeef368eb04325c526c2246eec3e55))));
-        multiFlowPump = IMultiFlowPump(0xBA510f10E3095B83a0F33aa9ad2544E22570a87C);
+        // bytes memory cp2CreationCode = vm.getCode("./node_modules/@beanstalk/wells1.2/out/ConstantProduct2.sol/ConstantProduct2.json");
 
+        // vm.etch(0xBA510C20FD2c52E4cb0d23CFC3cCD092F9165a6E, abi.encodePacked(cp2CreationCode, bytes("")));
+
+        // (bool success, bytes memory runtimeBytecode) = 0xBA510C20FD2c52E4cb0d23CFC3cCD092F9165a6E.call("");
+        
+        // if (!success) {
+        //     revert();
+        // }
+        // vm.etch(0xBA510C20FD2c52E4cb0d23CFC3cCD092F9165a6E, runtimeBytecode);
+        cp2 = ICP2(0xBA510C20FD2c52E4cb0d23CFC3cCD092F9165a6E);
+
+        // get Multi Flow Pump creation code & deploy
+        // bytes memory multiFlowPumpCreationCode = vm.getCode("./node_modules/@beanstalk/wells1.2/out/MultiFlowPump.sol/MultiFlowPump.json");
+        // vm.etch(0xBA510f10E3095B83a0F33aa9ad2544E22570a87C, abi.encodePacked(multiFlowPumpCreationCode, abi.encode(bytes16(0x3ff50624dd2f1a9fbe76c8b439581062), bytes16(0x3ff505e1d27a3ee9bffd7f3dd1a32671), uint256(12), bytes16(0x3ffeef368eb04325c526c2246eec3e55))));
+        // (success, runtimeBytecode) = 0xBA510f10E3095B83a0F33aa9ad2544E22570a87C.call("");
+
+        // if (!success) {
+        //     revert();
+        // }
+        // vm.etch(0xBA510f10E3095B83a0F33aa9ad2544E22570a87C, runtimeBytecode);
+        multiFlowPump = IMultiFlowPump(0xBA510f10E3095B83a0F33aa9ad2544E22570a87C);
+        
         mockPump = new MockPump();
 
         // get Well Implementation creation code & deploy
-        bytes memory wellImplementationCreationCode = vm.getCode("./node_modules/@beanstalk/wells1.2/out/Well.sol/Well.json");
-        vm.etch(0xBA510e11eEb387fad877812108a3406CA3f43a4B, abi.encodePacked(wellImplementationCreationCode, bytes("")));
-        wellImpl = IWellImpl(0xBA510e11eEb387fad877812108a3406CA3f43a4B);
+        // bytes memory wellImplementationCreationCode = vm.getCode("./node_modules/@beanstalk/wells1.2/out/Well.sol/Well.json");
+        // vm.etch(0xBA510e11eEb387fad877812108a3406CA3f43a4B, abi.encodePacked(wellImplementationCreationCode, bytes("")));
+        // (success, runtimeBytecode) = 0xBA510e11eEb387fad877812108a3406CA3f43a4B.call("");
 
+        // if (!success) {
+        //     revert();
+        // }
+        // vm.etch(0xBA510e11eEb387fad877812108a3406CA3f43a4B, runtimeBytecode);
+        wellImpl = IWellImpl(0xBA510e11eEb387fad877812108a3406CA3f43a4B);
+        
         // get aquifier creation code & deploy
-        bytes memory aquifierCreationCode = vm.getCode("./node_modules/@beanstalk/wells/out/Aquifer.sol/Aquifer.json");
-        vm.etch(0xBA51AAAA95aeEFc1292515b36D86C51dC7877773, abi.encodePacked(aquifierCreationCode, bytes("")));
+        // bytes memory aquifierCreationCode = vm.getCode("./node_modules/@beanstalk/wells/out/Aquifer.sol/Aquifer.json");
+        // vm.etch(0xBA51AAAA95aeEFc1292515b36D86C51dC7877773, abi.encodePacked(aquifierCreationCode, bytes("")));
+        // (success, runtimeBytecode) = 0xBA51AAAA95aeEFc1292515b36D86C51dC7877773.call("");
+        
+        // if (!success) {
+        //     revert();
+        // }
+        // vm.etch(0xBA51AAAA95aeEFc1292515b36D86C51dC7877773, runtimeBytecode);
         aquifier = IAquifer(0xBA51AAAA95aeEFc1292515b36D86C51dC7877773);
     }
 
@@ -363,33 +397,54 @@ contract FuzzSetup is FunctionCalls {
 
         address[] memory tokens = new address[](2);
         tokens[0] = address(beanToken);
-        tokens[1] = address(_pairToken);
-        
-        bytes memory packedPumpData = abi.encodePacked(
-            address(mockPump),
-            uint256(0),
-            new bytes(0)
-        );
+        tokens[1] = address(weth);
+
+        Call[] memory pumpData = new Call[](1);
+        pumpData[0].target = address(mockPump);
+        pumpData[0].data = new bytes(0);
+        DeployWellData memory wellEncodedData = DeployWellData(
+            tokens,            // tokens
+            Call(              // wellFunction
+                address(cp2),  // target
+                new bytes(0)   // data
+            ), 
+            pumpData           // pumps
+        ); 
+
+        bytes memory packedPumpData;
+
+        for (uint256 i; i < wellEncodedData.pumps.length; ++i) {
+            Call memory pump = wellEncodedData.pumps[i];
+            packedPumpData = abi.encodePacked(
+                packedPumpData,
+                pump.target,
+                pump.data.length,
+                pump.data
+            );
+        }
 
         bytes memory encodedWellParams = abi.encodePacked(
-            address(aquifier), // aquifier address
-            tokens.length,     // tokens length
-            address(cp2),      // well function target
-            uint256(0),        // well function data length
-            uint256(1),        // pumps length 
-            tokens,            // tokens
-            new bytes(0),      // well function data
-            packedPumpData     // packed pump data
+            address(aquifier),
+            wellEncodedData.tokens.length,
+            wellEncodedData.wellFunction.target,
+            wellEncodedData.wellFunction.data.length,
+            wellEncodedData.pumps.length,
+            wellEncodedData.tokens,
+            wellEncodedData.wellFunction.data,
+            packedPumpData
         );
 
-        address wellAddress = aquifier.boreWell(
-            0xBA510e11eEb387fad877812108a3406CA3f43a4B, // well impl
+        (bool success, bytes memory val) = address(aquifier).call(abi.encodeWithSelector(IAquifer.boreWell.selector, 
+            address(wellImpl),
             encodedWellParams,
             abi.encodeWithSignature("init(string,string)", wellName, wellSymbol),
-            bytes32(0) // salt
-        );
+            bytes32(0)
+        ));
 
-        vm.etch(_targetAddress, wellAddress.code);
+        address wellAddress = abi.decode(val, (address));
+
+        // @note uncomment for foundry tests
+        // vm.etch(_targetAddress, wellAddress.code);
         _copyContractState(wellAddress, _targetAddress);
         return _targetAddress;
     }
@@ -414,11 +469,12 @@ contract FuzzSetup is FunctionCalls {
             abi.encode(14400)
         );
 
-        vm.startPrank(address(diamond));
+        vm.prank(address(diamond));
         address(diamond).call(abi.encodeWithSelector(WhitelistFacet.updateOracleImplementationForToken.selector, address(weth), oracleImplementation));
 
         uint256 _ethTimeout = 3600 * 4;
         
+        vm.prank(address(diamond));
         address(diamond).call(
             abi.encodeWithSelector(
                 WhitelistFacet.updateOracleImplementationForToken.selector, 
@@ -431,20 +487,19 @@ contract FuzzSetup is FunctionCalls {
                 )
             )
         );
-
-        vm.stopPrank();
     }
 
     // initialize shipment routes
     function _initShipping() internal {
-        vm.startPrank(ADMIN);
 
+        vm.prank(address(diamondCutFacet));
         address(diamond).call(
             abi.encodeWithSelector(
                 FieldFacet.addField.selector
             )
         );
 
+        vm.prank(address(diamondCutFacet));
         address(diamond).call(
             abi.encodeWithSelector(
                 FieldFacet.setActiveField.selector,
@@ -472,6 +527,7 @@ contract FuzzSetup is FunctionCalls {
             data: abi.encode(uint256(0))
         });
 
+        vm.prank(address(diamondCutFacet));
         address(diamond).call(
             abi.encodeWithSelector(
                 Distribution.setShipmentRoutes.selector,
@@ -479,24 +535,26 @@ contract FuzzSetup is FunctionCalls {
             )
         );
 
-        vm.stopPrank();
-
     }
 
     
     // helper function to get diamond cuts
     function _getCuts() internal returns (IDiamondCut.FacetCut[] memory cuts) {
+        cuts = new IDiamondCut.FacetCut[](24);
+
         cuts[0] = IDiamondCut.FacetCut({
             facetAddress: address(depotFacet),
             action: IDiamondCut.FacetCutAction.Add,
             functionSelectors: depotSelects
         });
 
+
         cuts[1] = IDiamondCut.FacetCut({
             facetAddress: address(farmFacet),
             action: IDiamondCut.FacetCutAction.Add,
             functionSelectors: farmSelects
         });
+
 
         cuts[2] = IDiamondCut.FacetCut({
             facetAddress: address(tokenFacet),
@@ -625,27 +683,9 @@ contract FuzzSetup is FunctionCalls {
         });
 
         cuts[23] = IDiamondCut.FacetCut({
-            facetAddress: address(diamondCutFacet),
-            action: IDiamondCut.FacetCutAction.Add,
-            functionSelectors: diamondCutSelects
-        });
-
-        cuts[24] = IDiamondCut.FacetCut({
-            facetAddress: address(diamondLoupeFacet),
-            action: IDiamondCut.FacetCutAction.Add,
-            functionSelectors: diamondLoupeSelects
-        });
-
-        cuts[25] = IDiamondCut.FacetCut({
             facetAddress: address(ownershipFacet),
             action: IDiamondCut.FacetCutAction.Add,
             functionSelectors: ownershipSelects
-        });
-
-        cuts[26] = IDiamondCut.FacetCut({
-            facetAddress: address(pauseFacet),
-            action: IDiamondCut.FacetCutAction.Add,
-            functionSelectors: pauseSelects
         });
     }
 

@@ -60,6 +60,6 @@ contract SiloFacetCalls is FuzzBase, FuzzStorageVariables {
 
         vm.prank(currentActor);
         (success, returnData) =
-            address(diamond).call(abi.encodeWithSelector(SiloFacet.updateSortedDepositIds.selector, _input1, _input2, _input3));
+            address(diamond).call(abi.encodeWithSelector(SiloFacet.safeBatchTransferFrom.selector, _input1, _input2, _input3));
     }
 }

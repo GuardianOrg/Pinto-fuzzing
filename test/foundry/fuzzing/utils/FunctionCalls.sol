@@ -782,7 +782,6 @@ contract FunctionCalls is FuzzBase, FuzzStorageVariables {
     }
 
     function _depositCall(address _input1, uint256 _input2, LibTransfer.From _input3) internal returns (bool success, bytes memory returnData) {
-
         vm.prank(currentActor);
         (success, returnData) =
             address(diamond).call(abi.encodeWithSelector(SiloFacet.deposit.selector, _input1, _input2, _input3));
@@ -795,7 +794,7 @@ contract FunctionCalls is FuzzBase, FuzzStorageVariables {
             address(diamond).call(abi.encodeWithSelector(SiloFacet.withdrawDeposit.selector, _input1, _input2, _input3));
     }
 
-    function _withdrawDepositsCall(address _input1, int96[] calldata _input2, uint256[] calldata _input3, LibTransfer.To _input4) internal returns (bool success, bytes memory returnData) {
+    function _withdrawDepositsCall(address _input1, int96[] calldata _input2, uint256[] calldata _input3, LibTransfer.To _input4) public returns (bool success, bytes memory returnData) {
 
         vm.prank(currentActor);
         (success, returnData) =
@@ -809,7 +808,7 @@ contract FunctionCalls is FuzzBase, FuzzStorageVariables {
             address(diamond).call(abi.encodeWithSelector(SiloFacet.transferDeposit.selector, _input1, _input2, _input3, _input4, _input5));
     }
 
-    function _transferDepositsCall(address _input1, address _input2, address _input3, int256[] calldata _input4, uint256[] calldata _input5) internal returns (bool success, bytes memory returnData) {
+    function _transferDepositsCall(address _input1, address _input2, address _input3, int256[] calldata _input4, uint256[] calldata _input5) public returns (bool success, bytes memory returnData) {
 
         vm.prank(currentActor);
         (success, returnData) =
@@ -1919,6 +1918,362 @@ contract FunctionCalls is FuzzBase, FuzzStorageVariables {
         vm.prank(currentActor);
         (success, returnData) =
             address(diamond).call(abi.encodeWithSelector(SeasonGettersFacet.getWellsByDeltaB.selector));
+    }
+
+    function _setShipmentRoutesCall(ShipmentRoute[] calldata _input1) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(diamond).call(abi.encodeWithSelector(Distribution.setShipmentRoutes.selector, _input1));
+    }
+
+    function _encodeOperatorPasteInstrCall(uint80 _input1, uint80 _input2, uint80 _input3) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(drafter).call(abi.encodeWithSelector(Drafter.encodeOperatorPasteInstr.selector, _input1, _input2, _input3));
+    }
+
+    function _decodeOperatorPasteInstrCall(bytes32 _input1) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(drafter).call(abi.encodeWithSelector(Drafter.decodeOperatorPasteInstr.selector, _input1));
+    }
+
+    function _encodeLibReturnPasteParamCall(uint80 _input1, uint80 _input2, uint80 _input3) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(drafter).call(abi.encodeWithSelector(Drafter.encodeLibReturnPasteParam.selector, _input1, _input2, _input3));
+    }
+
+    function _decodeLibReturnPasteParamCall(bytes32 _input1) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(drafter).call(abi.encodeWithSelector(Drafter.decodeLibReturnPasteParam.selector, _input1));
+    }
+
+    function _encodeClipboardCall(uint256 _input1, bytes32[] memory _input2) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(drafter).call(abi.encodeWithSelector(Drafter.encodeClipboard.selector, _input1, _input2));
+    }
+
+    function _decodeClipboardCall(bytes memory _input1) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(drafter).call(abi.encodeWithSelector(Drafter.decodeClipboard.selector, _input1));
+    }
+
+    function _priceThresholdGaugePointsCall(uint80 _input1, uint80 _input2, uint80 _input3, bytes memory _input4) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(gaugePriceThreshold).call(abi.encodeWithSelector(GaugePriceThreshold.priceThresholdGaugePoints.selector, _input1, _input2, _input3, _input4));
+    }
+
+    function _getBeanstalkCall() internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(gaugePriceThreshold).call(abi.encodeWithSelector(GaugePriceThreshold.getBeanstalk.selector));
+    }
+
+    function _getTokenCall() internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(gaugePriceThreshold).call(abi.encodeWithSelector(GaugePriceThreshold.getToken.selector));
+    }
+
+    function _getPriceThresholdCall() internal returns (bool success, bytes memory returnData) {
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(gaugePriceThreshold).call(abi.encodeWithSelector(GaugePriceThreshold.getPriceThreshold.selector));
+    }
+
+    function _getGaugePointsPriceCall() internal returns (bool success, bytes memory returnData) {
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(gaugePriceThreshold).call(abi.encodeWithSelector(GaugePriceThreshold.getGaugePointsPrice.selector));
+    }
+
+    function _addOperatorCall(address _input1) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(operatorWhitelist).call(abi.encodeWithSelector(OperatorWhitelist.addOperator.selector, _input1));
+    }
+
+    function _removeOperatorCall(address _input1) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(operatorWhitelist).call(abi.encodeWithSelector(OperatorWhitelist.removeOperator.selector, _input1));
+    }
+
+    function _checkOperatorWhitelistCall(address _input1) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(operatorWhitelist).call(abi.encodeWithSelector(OperatorWhitelist.checkOperatorWhitelist.selector, _input1));
+    }
+
+    function _getWhitelistedOperatorsCall() internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(operatorWhitelist).call(abi.encodeWithSelector(OperatorWhitelist.getWhitelistedOperators.selector));
+    }
+
+    function _isValidSlippageCall(IWell _input1, IERC20 _input2, uint256 _input3) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(priceManipulation).call(abi.encodeWithSelector(PriceManipulation.isValidSlippage.selector, _input1, _input2, _input3));
+    }
+
+    function _aggregatePintoPerUsdcCall() internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(priceManipulation).call(abi.encodeWithSelector(PriceManipulation.aggregatePintoPerUsdc.selector));
+    }
+
+    function _priceCall() internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(priceManipulation).call(abi.encodeWithSelector(PriceManipulation.price.selector));
+    }
+
+    function _getFieldPlanCall(bytes memory _input1) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(shipPlanner).call(abi.encodeWithSelector(ShipmentPlanner.getFieldPlan.selector, _input1));
+    }
+
+    function _getSiloPlanCall(bytes memory _input1) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(shipPlanner).call(abi.encodeWithSelector(ShipmentPlanner.getSiloPlan.selector, _input1));
+    }
+
+    function _getBudgetPlanCall(bytes memory _input1) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(shipPlanner).call(abi.encodeWithSelector(ShipmentPlanner.getBudgetPlan.selector, _input1));
+    }
+
+    function _getPaybackFieldPlanCall(bytes memory _input1) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(shipPlanner).call(abi.encodeWithSelector(ShipmentPlanner.getPaybackFieldPlan.selector, _input1));
+    }
+
+    function _getPaybackPlanCall(bytes memory _input1) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(shipPlanner).call(abi.encodeWithSelector(ShipmentPlanner.getPaybackPlan.selector, _input1));
+    }
+
+    function _sowBlueprintv0Call(SowBlueprintv0.SowBlueprintStruct calldata _input1) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(sowBlueprintv0).call(abi.encodeWithSelector(SowBlueprintv0.sowBlueprintv0.selector, _input1));
+    }
+
+    function _getLastExecutedSeasonCall(bytes32 _input1) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(sowBlueprintv0).call(abi.encodeWithSelector(SowBlueprintv0.getLastExecutedSeason.selector, _input1));
+    }
+
+    function _getPintosLeftToSowCall(bytes32 _input1) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(sowBlueprintv0).call(abi.encodeWithSelector(SowBlueprintv0.getPintosLeftToSow.selector, _input1));
+    }
+
+
+    function _validateParamsAndReturnBeanstalkStateCall(SowBlueprintv0.SowBlueprintStruct calldata _input1, bytes32 _input2, address _input3) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(sowBlueprintv0).call(abi.encodeWithSelector(SowBlueprintv0.validateParamsAndReturnBeanstalkState.selector, _input1, _input2, _input3));
+    }
+
+    function _validateParamsAndReturnBeanstalkStateArrayCall(SowBlueprintv0.SowBlueprintStruct[] calldata _input1, bytes32[] calldata _input2, address[] calldata _input3) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(sowBlueprintv0).call(abi.encodeWithSelector(SowBlueprintv0.validateParamsAndReturnBeanstalkStateArray.selector, _input1, _input2, _input3));
+    }
+
+    function _getWithdrawalPlanExcludingPlanCall(address _input1,uint8[] memory _input2, uint256 _input3, uint256 _input4, LibTractorHelpers.WithdrawalPlan memory _input5) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(tractorHelpers).call(abi.encodeWithSelector(TractorHelpers.getWithdrawalPlanExcludingPlan.selector, _input1, _input2, _input3, _input4, _input5));
+    }
+
+    function _getWithdrawalPlanCall(address _input1,uint8[] memory _input2, uint256 _input3, uint256 _input4) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(tractorHelpers).call(abi.encodeWithSelector(TractorHelpers.getWithdrawalPlan.selector, _input1, _input2, _input3, _input4));
+    }
+
+    function _withdrawBeansFromSourcesCall(address _input1, uint8[] memory _input2, uint256 _input3, uint256 _input4, uint256 _input5, LibTransfer.To _input6, LibTractorHelpers.WithdrawalPlan memory _input7) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(tractorHelpers).call(abi.encodeWithSelector(TractorHelpers.withdrawBeansFromSources.selector, _input1, _input2, _input3, _input4, _input5, _input6, _input7));
+    }
+
+    function _getBeanstalkPriceCall() internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(tractorHelpers).call(abi.encodeWithSelector(TractorHelpers.getBeanstalkPrice.selector));
+    }
+
+    function _getSortedWhitelistedTokensBySeedsCall() internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(tractorHelpers).call(abi.encodeWithSelector(TractorHelpers.getSortedWhitelistedTokensBySeeds.selector));
+    }
+
+    function _getHighestSeedTokenCall() internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(tractorHelpers).call(abi.encodeWithSelector(TractorHelpers.getHighestSeedToken.selector));
+    }
+
+    function _getLowestSeedTokenCall() internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(tractorHelpers).call(abi.encodeWithSelector(TractorHelpers.getLowestSeedToken.selector));
+    }
+
+    function _getUserDepositedTokensCall(address _input1) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(tractorHelpers).call(abi.encodeWithSelector(TractorHelpers.getUserDepositedTokens.selector, _input1));
+    }
+
+    function _getUserDepositedTokensCall(address _input1, address _input2, uint256 _input3, int96 _input4, LibTractorHelpers.WithdrawalPlan memory _input5) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(tractorHelpers).call(abi.encodeWithSelector(TractorHelpers.getUserDepositedTokens.selector, _input1, _input2, _input3, _input4, _input5));
+    }
+
+    function _getDepositStemsAndAmountsToWithdrawCall(address _input1, address _input2, uint256 _input3, int96 _input4, LibTractorHelpers.WithdrawalPlan memory _input5) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(tractorHelpers).call(abi.encodeWithSelector(0x0338e83e, _input1, _input2, _input3, _input4, _input5));
+    }
+
+    function _getDepositStemsAndAmountsToWithdrawCall(address _input1, address _input2, uint256 _input3, int96 _input4) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(tractorHelpers).call(abi.encodeWithSelector(0x3d29d115, _input1, _input2, _input3, _input4));
+    }
+
+    // function _getAddressAndStemCall(uint256 _input1) internal returns (bool success, bytes memory returnData) {
+
+    //     vm.prank(currentActor);
+    //     (success, returnData) =
+    //         address(tractorHelpers).call(abi.encodeWithSelector(TractorHelpers.getAddressAndStem.selector, _input1));
+    // }
+
+    function _getLPTokensToWithdrawForBeansCall(uint256 _input1, address _input2) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(tractorHelpers).call(abi.encodeWithSelector(TractorHelpers.getLPTokensToWithdrawForBeans.selector, _input1, _input2));
+    }
+
+    function _getTokensAscendingSeedsCall() internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(tractorHelpers).call(abi.encodeWithSelector(TractorHelpers.getTokensAscendingSeeds.selector));
+    }
+
+    function _getTokensAscendingPriceCall() internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(tractorHelpers).call(abi.encodeWithSelector(TractorHelpers.getTokensAscendingPrice.selector));
+    }
+
+    function _getSortedDepositsCall(address _input1, address _input2) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(tractorHelpers).call(abi.encodeWithSelector(TractorHelpers.getSortedDeposits.selector, _input1, _input2));
+    }
+
+    function _getBeanAmountAvailableCall(address _input1, address _input2) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(tractorHelpers).call(abi.encodeWithSelector(TractorHelpers.getBeanAmountAvailable.selector, _input1, _input2));
+    }
+
+    function _getTokenIndexCall(address _input1) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(tractorHelpers).call(abi.encodeWithSelector(TractorHelpers.getTokenIndex.selector, _input1));
+    }
+
+    function _tipCall(address _input1, address _input2, address _input3, int256 _input4, LibTransfer.From _input5, LibTransfer.To _input6) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(tractorHelpers).call(abi.encodeWithSelector(TractorHelpers.tip.selector, _input1, _input2, _input3, _input4, _input5, _input6));
+    }
+
+    function _isOperatorWhitelistedCall(address[] calldata _input1) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(tractorHelpers).call(abi.encodeWithSelector(TractorHelpers.isOperatorWhitelisted.selector, _input1));
+    }
+
+    function _combineWithdrawalPlansCall(LibTractorHelpers.WithdrawalPlan[] memory _input1) internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(tractorHelpers).call(abi.encodeWithSelector(TractorHelpers.combineWithdrawalPlans.selector, _input1));
+    }
+
+    function _getWhitelistStatusAddressesCall() internal returns (bool success, bytes memory returnData) {
+
+        vm.prank(currentActor);
+        (success, returnData) =
+            address(tractorHelpers).call(abi.encodeWithSelector(TractorHelpers.getWhitelistStatusAddresses.selector));
     }
 
 

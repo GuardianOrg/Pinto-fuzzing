@@ -16,6 +16,7 @@
 [submodule "lib/fuzzlib"]
 	path = lib/fuzzlib
 	url = https://github.com/perimetersec/fuzzlib
+	branch = main
 [submodule "lib/solady"]
 	path = lib/solady
 	url = https://github.com/Vectorized/solady

@@ -25,7 +25,7 @@ import {LibTransfer} from "contracts/libraries/Token/LibTransfer.sol";
 
 import {DepotFacet} from "contracts/beanstalk/facets/farm/DepotFacet.sol";
 import {TokenFacet} from "contracts/beanstalk/facets/farm/TokenFacet.sol";
-import {FarmFacet} from "contracts/beanstalk/facets/farm/FarmFacet.sol";
+import {FarmFacet} from "contracts/beanstalk/facets/farm/FarmFacet.sol"; //@next
 import {TokenFacet} from "contracts/beanstalk/facets/farm/TokenFacet.sol";
 import {TokenSupportFacet} from "contracts/beanstalk/facets/farm/TokenSupportFacet.sol";
 import {TractorFacet} from "contracts/beanstalk/facets/farm/TractorFacet.sol";
@@ -74,6 +74,7 @@ import {PriceManipulation} from "contracts/ecosystem/PriceManipulation.sol";
 import {ShipmentPlanner} from "contracts/ecosystem/ShipmentPlanner.sol";
 import {SowBlueprintv0} from "contracts/ecosystem/SowBlueprintv0.sol";
 import {TractorHelpers} from "contracts/ecosystem/TractorHelpers.sol";
+import {LibTractorHelpers} from "contracts/libraries/Silo/LibTractorHelpers.sol";
 
 import {MockPump} from "contracts/mocks/well/MockPump.sol";
 import {IAquifer} from "contracts/interfaces/basin/IAquifer.sol";
@@ -91,6 +92,8 @@ import {Distribution} from "contracts/beanstalk/facets/sun/abstract/Distribution
 
 import {Bean} from "contracts/tokens/Bean.sol";
 
+import {MockInitDiamond} from "contracts/mocks/newMockInitDiamond.sol";
+
 contract FuzzStorageVariables is FuzzActors {
     // ==============================================================
     // FUZZING SUITE SETUP
@@ -100,6 +103,17 @@ contract FuzzStorageVariables is FuzzActors {
         string name;
         string symbol;
         uint8 decimals;
+    }
+
+    struct Call {
+        address target; // The address the call is executed on.
+        bytes data; // Extra calldata to be passed during the call
+    }
+
+    struct DeployWellData {
+        address[] tokens;
+        Call wellFunction;
+        Call[] pumps;
     }
 
     address currentActor;
@@ -126,7 +140,7 @@ contract FuzzStorageVariables is FuzzActors {
     DiamondCutFacet diamondCutFacet;
     DiamondLoupeFacet diamondLoupeFacet;
     OwnershipFacet ownershipFacet;
-    InitDiamond initDiamond;
+    MockInitDiamond initDiamond;
     PauseFacet pauseFacet;
 
     // Farm
@@ -187,18 +201,24 @@ contract FuzzStorageVariables is FuzzActors {
     // Pipeline
     Pipeline pipeLine;
 
-    // Tokens
-    Bean beanToken;
+    
 
     // Pipeline internal pipeline;
     IMockFBeanstalk internal beanstock;
 
-    // MockToken internal bean;
+    // Tokens
+    Bean beanToken;
+
+    // MockToken 
+    MockToken internal beanMock;
     MockToken internal weth;
     MockToken internal wstEth;
     MockToken internal usdc;
     MockToken internal usdt;
     MockToken internal wbtc;
+
+    MockToken[] mockTokens;
+
 
     // Chainlink
     MockChainlinkAggregator internal cl_eth_usd;
