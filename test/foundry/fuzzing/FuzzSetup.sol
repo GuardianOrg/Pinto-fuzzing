@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import "./utils/FunctionCalls.sol";
 import "@perimetersec/fuzzlib/src/FuzzBase.sol";
 
-
 import {MockToken} from "contracts/mocks/MockToken.sol";
 import {IMockFBeanstalk} from "contracts/interfaces/IMockFBeanstalk.sol";
 import {MockSeasonFacet} from "contracts/mocks/mockFacets/MockSeasonFacet.sol";
@@ -122,42 +121,15 @@ contract FuzzSetup is FunctionCalls {
         diamondLoupeFacet = new DiamondLoupeFacet();
         ownershipFacet = new OwnershipFacet();
         pauseFacet = new PauseFacet();
-        initDiamond = new MockInitDiamond();
+        initDiamond = new MockInitDiamondFuzz();
         diamond = new Diamond(address(diamondCutFacet));
 
         IDiamondCut.FacetCut[] memory cuts = _getCuts();
 
-        vm.prank(address(diamondCutFacet));
-        IDiamondCut(address(diamond)).diamondCut(
-            cuts,
-            address(initDiamond),
-            abi.encodeWithSignature("init()")
-        );
-
-        // Create Ecosystem
-        junction = new Junction();
-        mathJunction = new MathJunction();
-        logicJunction = new LogicJunction();
-
-        lSDChainlinkOracle = new LSDChainlinkOracle();
-
-        beanstalkPrice = new BeanstalkPrice(address(diamond));
-        wellPrice = new WellPrice(address(diamond));
-
-        drafter = new Drafter();
-        gaugePriceThreshold = new GaugePriceThreshold(address(diamond), address(weth), 1e6, 1e6); //@note look into better values for last two params
-        operatorWhitelist = new OperatorWhitelist(ADMIN);
-        priceManipulation = new PriceManipulation(address(diamond));
-        shipment_planner = new ShipmentPlanner(address(diamond), address(beanToken));
-        tractorHelpers = new TractorHelpers(address(diamond), address(beanstalkPrice), ADMIN, address(priceManipulation));
-        sowBlueprintv0 = new SowBlueprintv0(address(diamond), ADMIN, address(tractorHelpers));
-
-        // Create Pipeline
-        pipeLine = new Pipeline();
 
         // Create Tokens
-        // bytes memory bytecode = type(Bean).runtimeCode;
-        // bytes memory bytecode = type(Bean).creationCode;
+        // // @note uncomment for foundry tests
+        // bytes memory bytecode = type(Bean).runtimeCode; // for foundry
         // vm.etch(0xBEA0000029AD1c77D3d5D23Ba2D8893dB9d1Efab, bytecode);
         beanToken = Bean(0xBEA0000029AD1c77D3d5D23Ba2D8893dB9d1Efab);
         beanMock = MockToken(0xBEA0000029AD1c77D3d5D23Ba2D8893dB9d1Efab);
@@ -181,8 +153,36 @@ contract FuzzSetup is FunctionCalls {
         _deployBasin();
 
         // // Deploy bean eth well & bean wstEth well
-        beanEthWell = IWell(_deployWell(0xBEA0e11282e2bB5893bEcE110cF199501e872bAd, weth));
-        beanWstEthWell = IWell(_deployWell(0xBeA0000113B0d182f4064C86B71c315389E4715D, wstEth));
+        beanEthWell = IWell(_deployWell(weth));
+        beanWstEthWell = IWell(_deployWell(wstEth));
+
+        vm.prank(address(diamondCutFacet));
+        IDiamondCut(address(diamond)).diamondCut(
+            cuts,
+            address(initDiamond),
+            abi.encodeWithSignature("init(address,address)", address(beanEthWell), address(beanWstEthWell))
+        );
+
+        // Create Ecosystem
+        junction = new Junction();
+        mathJunction = new MathJunction();
+        logicJunction = new LogicJunction();
+
+        lSDChainlinkOracle = new LSDChainlinkOracle();
+
+        beanstalkPrice = new BeanstalkPrice(address(diamond));
+        wellPrice = new WellPrice(address(diamond));
+
+        drafter = new Drafter();
+        gaugePriceThreshold = new GaugePriceThreshold(address(diamond), address(weth), 1e6, 1e6); //@note look into better values for last two params
+        operatorWhitelist = new OperatorWhitelist(ADMIN);
+        priceManipulation = new PriceManipulation(address(diamond));
+        shipment_planner = new ShipmentPlanner(address(diamond), address(beanToken));
+        tractorHelpers = new TractorHelpers(address(diamond), address(beanstalkPrice), ADMIN, address(priceManipulation));
+        sowBlueprintv0 = new SowBlueprintv0(address(diamond), ADMIN, address(tractorHelpers));
+
+        // Create Pipeline
+        pipeLine = new Pipeline();
 
         // Create Oracles & set initital price
         cl_eth_usd = _deployOracle(0);
@@ -345,7 +345,7 @@ contract FuzzSetup is FunctionCalls {
         // vm.etch(0xBA510C20FD2c52E4cb0d23CFC3cCD092F9165a6E, runtimeBytecode);
         cp2 = ICP2(0xBA510C20FD2c52E4cb0d23CFC3cCD092F9165a6E);
 
-        // get Multi Flow Pump creation code & deploy
+        // // get Multi Flow Pump creation code & deploy
         // bytes memory multiFlowPumpCreationCode = vm.getCode("./node_modules/@beanstalk/wells1.2/out/MultiFlowPump.sol/MultiFlowPump.json");
         // vm.etch(0xBA510f10E3095B83a0F33aa9ad2544E22570a87C, abi.encodePacked(multiFlowPumpCreationCode, abi.encode(bytes16(0x3ff50624dd2f1a9fbe76c8b439581062), bytes16(0x3ff505e1d27a3ee9bffd7f3dd1a32671), uint256(12), bytes16(0x3ffeef368eb04325c526c2246eec3e55))));
         // (success, runtimeBytecode) = 0xBA510f10E3095B83a0F33aa9ad2544E22570a87C.call("");
@@ -382,11 +382,9 @@ contract FuzzSetup is FunctionCalls {
     }
 
     // deploy well
-    function _deployWell(address _targetAddress, MockToken _pairToken) internal returns(address) {
+    function _deployWell(MockToken _pairToken) internal returns(address) {
 
         uint256[] memory _init0 = new uint256[](2);
-
-        mockPump.updateNoBytes(_targetAddress, _init0);
 
         string memory wellName = string(
             abi.encodePacked(beanToken.name(), _pairToken.name(), "Well")
@@ -441,12 +439,11 @@ contract FuzzSetup is FunctionCalls {
             bytes32(0)
         ));
 
+        
+
         address wellAddress = abi.decode(val, (address));
 
-        // @note uncomment for foundry tests
-        // vm.etch(_targetAddress, wellAddress.code);
-        _copyContractState(wellAddress, _targetAddress);
-        return _targetAddress;
+        return wellAddress;
     }
 
     function _copyContractState(address source, address target) internal {

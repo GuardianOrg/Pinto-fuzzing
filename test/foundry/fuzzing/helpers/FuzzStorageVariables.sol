@@ -92,7 +92,7 @@ import {Distribution} from "contracts/beanstalk/facets/sun/abstract/Distribution
 
 import {Bean} from "contracts/tokens/Bean.sol";
 
-import {MockInitDiamond} from "contracts/mocks/newMockInitDiamond.sol";
+import {MockInitDiamondFuzz} from "../mocks/MockInitDiamondFuzz.sol";
 
 contract FuzzStorageVariables is FuzzActors {
     // ==============================================================
@@ -140,7 +140,7 @@ contract FuzzStorageVariables is FuzzActors {
     DiamondCutFacet diamondCutFacet;
     DiamondLoupeFacet diamondLoupeFacet;
     OwnershipFacet ownershipFacet;
-    MockInitDiamond initDiamond;
+    MockInitDiamondFuzz initDiamond;
     PauseFacet pauseFacet;
 
     // Farm

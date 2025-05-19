@@ -5,6 +5,7 @@ import "./fuzz_calls/farm/FuzzDepotFacet.sol";
 import "./fuzz_calls/silo/FuzzSiloFacet.sol";
 
 contract FuzzGuided is FuzzDepotFacet, FuzzSiloFacet {
+
     function fuzz_guided_deposit_silo(uint256 x, uint256 y) public setCurrentActor {
         fuzz_deposit_silo_facet(x, y);
     }

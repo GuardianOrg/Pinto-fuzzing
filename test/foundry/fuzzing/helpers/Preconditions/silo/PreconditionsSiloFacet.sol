@@ -2,8 +2,9 @@
 pragma solidity ^0.8.0;
 
 import "../PreconditionsBase.sol";
+import "../../../properties/Properties.sol";
 
-contract PreconditionsSiloFacet is PreconditionsBase {
+contract PreconditionsSiloFacet is PreconditionsBase, Properties {
 
     function _setWellLiquidity() internal {
         vm.prank(currentActor);
@@ -24,9 +25,10 @@ contract PreconditionsSiloFacet is PreconditionsBase {
         }
 
         (address token2, ) = abi.decode(returnData, (address, uint256));
-
+        
         vm.prank(ADMIN);
         beanToken.mint(_well, _beanAmount);
+        vm.prank(ADMIN);
         MockToken(token2).mint(_well, _token2Amount);
 
         IWell(_well).sync(currentActor, 0);

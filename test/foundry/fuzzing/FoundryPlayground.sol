@@ -25,7 +25,7 @@ contract FoundryPlayground is FuzzGuided {
         fuzz_transfer_deposit_silo_facet(1, 2, 3);
     }
 
-    function test_silo__multi_transfer() public {
+    function test_silo_multi_transfer() public {
         fuzz_guided_multi_transfer_silo_facet(1, 2, 3, 4);
     }
 

@@ -10,10 +10,8 @@ contract FuzzSiloFacet is PreconditionsSiloFacet, PostconditionsSiloFacet {
 
         MockToken token = mockTokens[0];
         console.log(token.name());
-        uint256 tokenAmount = fl.clamp(_amountSalt, 0, 10000) * (10 ** token.decimals()); //@TODO consider incrementing
+        uint256 tokenAmount = fl.clamp(_amountSalt, 1, 10000) * (10 ** token.decimals()); //@TODO consider incrementing
         uint256 mode = fl.clamp(_modeSalt, 0, 3);
-
-        
 
         address[] memory actorsToUpdate = new address[](1);
         actorsToUpdate[0] = currentActor;
@@ -24,13 +22,10 @@ contract FuzzSiloFacet is PreconditionsSiloFacet, PostconditionsSiloFacet {
         vm.prank(ADMIN);
         beanToken.mint(currentActor, tokenAmount);
 
+
         (bool success, bytes memory returnData) = _depositCall(address(token), tokenAmount, LibTransfer.From(mode));
 
-        if (!success) {
-            revert(); //@TODO better error handeling
-        }
-
-        _after(actorsToUpdate);
+        _siloFacetPostCondition(success, returnData, actorsToUpdate);
         
     }
 
@@ -38,10 +33,8 @@ contract FuzzSiloFacet is PreconditionsSiloFacet, PostconditionsSiloFacet {
 
         MockToken token = mockTokens[0];
         console.log(token.name());
-        uint256 tokenAmount = fl.clamp(_amountSalt, 0, 10000) * (10 ** token.decimals()); //@TODO consider incrementing
+        uint256 tokenAmount = fl.clamp(_amountSalt, 1, 10000) * (10 ** token.decimals()); //@TODO consider incrementing
         uint256 mode = fl.clamp(_modeSalt, 0, 3);
-
-        
 
         address[] memory actorsToUpdate = new address[](1);
         actorsToUpdate[0] = currentActor;
@@ -61,11 +54,8 @@ contract FuzzSiloFacet is PreconditionsSiloFacet, PostconditionsSiloFacet {
         (uint256 amount, uint256 bdv, int96 stem) = abi.decode(returnData, (uint256, uint256, int96));
 
         (success, returnData) = _withdrawDepositCall(address(token), stem, amount, LibTransfer.To(mode % 2));
-        if (!success) {
-            revert(); //@TODO better error handeling
-        }
 
-        _after(actorsToUpdate);
+        _siloFacetPostCondition(success, returnData, actorsToUpdate);
         
     }
 
@@ -73,10 +63,9 @@ contract FuzzSiloFacet is PreconditionsSiloFacet, PostconditionsSiloFacet {
 
         MockToken token = mockTokens[0];
         console.log(token.name());
-        uint256 tokenAmount1 = fl.clamp(_amountSalt1, 0, 10000) * (10 ** token.decimals()); //@TODO consider incrementing
-        uint256 tokenAmount2 = fl.clamp(_amountSalt2, 0, 10000) * (10 ** token.decimals()); //@TODO consider incrementing
+        uint256 tokenAmount1 = fl.clamp(_amountSalt1, 1, 10000) * (10 ** token.decimals()); //@TODO consider incrementing
+        uint256 tokenAmount2 = fl.clamp(_amountSalt2, 1, 10000) * (10 ** token.decimals()); //@TODO consider incrementing
         uint256 mode = fl.clamp(_modeSalt, 0, 3);
-
 
         address[] memory actorsToUpdate = new address[](1);
         actorsToUpdate[0] = currentActor;
@@ -91,7 +80,7 @@ contract FuzzSiloFacet is PreconditionsSiloFacet, PostconditionsSiloFacet {
 
         (bool success, bytes memory returnData) = this._withdrawDepositsCall(address(token), stems, amounts, LibTransfer.To(mode % 2));
 
-        _after(actorsToUpdate);
+        _siloFacetPostCondition(success, returnData, actorsToUpdate);
         
     }
 
@@ -99,7 +88,7 @@ contract FuzzSiloFacet is PreconditionsSiloFacet, PostconditionsSiloFacet {
 
         MockToken token = mockTokens[0];
         console.log(token.name());
-        uint256 tokenAmount = fl.clamp(_amountSalt, 0, 10000) * (10 ** token.decimals()); //@TODO consider incrementing
+        uint256 tokenAmount = fl.clamp(_amountSalt, 1, 10000) * (10 ** token.decimals()); //@TODO consider incrementing
         uint256 mode = fl.clamp(_modeSalt, 0, 3);
         uint256 recieverIndex = fl.clamp(_receiverSalt, 0, 2);
 
@@ -109,8 +98,9 @@ contract FuzzSiloFacet is PreconditionsSiloFacet, PostconditionsSiloFacet {
             receiver = USERS[(recieverIndex + 1) % 3];
         }
 
-        address[] memory actorsToUpdate = new address[](1);
+        address[] memory actorsToUpdate = new address[](2);
         actorsToUpdate[0] = currentActor;
+        actorsToUpdate[1] = receiver;
 
         _setWellLiquidity();
         _before(actorsToUpdate);
@@ -125,14 +115,10 @@ contract FuzzSiloFacet is PreconditionsSiloFacet, PostconditionsSiloFacet {
         }
         (uint256 amount, uint256 bdv, int96 stem) = abi.decode(returnData, (uint256, uint256, int96));
 
-        
         // transfer deposit
         (success, returnData) = _transferDepositCall(currentActor, receiver, address(token), stem, amount);
-        if (!success) {
-            revert(); //@TODO better error handeling
-        }
 
-        _after(actorsToUpdate);
+        _siloFacetPostCondition(success, returnData, actorsToUpdate);
         
     }
 
@@ -141,8 +127,8 @@ contract FuzzSiloFacet is PreconditionsSiloFacet, PostconditionsSiloFacet {
 
         MockToken token = mockTokens[0];
         console.log(token.name());
-        uint256 tokenAmount1 = fl.clamp(_amountSalt1, 0, 10000) * (10 ** token.decimals()); //@TODO consider incrementing
-        uint256 tokenAmount2 = fl.clamp(_amountSalt2, 0, 10000) * (10 ** token.decimals()); //@TODO consider incrementing
+        uint256 tokenAmount1 = fl.clamp(_amountSalt1, 1, 10000) * (10 ** token.decimals()); //@TODO consider incrementing
+        uint256 tokenAmount2 = fl.clamp(_amountSalt2, 1, 10000) * (10 ** token.decimals()); //@TODO consider incrementing
         uint256 mode = fl.clamp(_modeSalt, 0, 3);
         uint256 recieverIndex = fl.clamp(_receiverSalt, 0, 2);
 
@@ -152,8 +138,9 @@ contract FuzzSiloFacet is PreconditionsSiloFacet, PostconditionsSiloFacet {
             receiver = USERS[(recieverIndex + 1) % 3];
         }
 
-        address[] memory actorsToUpdate = new address[](1);
+        address[] memory actorsToUpdate = new address[](2);
         actorsToUpdate[0] = currentActor;
+        actorsToUpdate[1] = receiver;
 
         _setWellLiquidity();
         _before(actorsToUpdate);
@@ -169,11 +156,8 @@ contract FuzzSiloFacet is PreconditionsSiloFacet, PostconditionsSiloFacet {
 
         // transfer deposits
         (bool success, bytes memory returnData) = this._transferDepositsCall(currentActor, receiver, address(token), stems256, amounts);
-        if (!success) {
-            revert(); //@TODO better error handeling
-        }
 
-        _after(actorsToUpdate);
+        _siloFacetPostCondition(success, returnData, actorsToUpdate);
         
     }
 
