@@ -37,10 +37,12 @@ contract PreconditionsSiloFacet is PreconditionsBase, Properties {
         IWell(_well).sync(currentActor, 0);
     }
 
-    function _doubleDeposit(MockToken _token, uint256 _tokenAmount1, uint256 _tokenAmount2, uint256 _mode) internal returns(int96[] memory stems, uint256[] memory amounts) {
+    function _doubleDeposit(MockToken _token, uint256 _tokenAmount1, uint256 _tokenAmount2) internal returns(int96[] memory stems, uint256[] memory amounts) {
         stems = new int96[](2);
         amounts = new uint256[](2);
-       
+
+        uint256 _mode = 0;
+
         // first deposit
         (bool success, bytes memory returnData) = _depositCall(address(_token), _tokenAmount1, LibTransfer.From(_mode));
         if (!success) {
@@ -61,7 +63,5 @@ contract PreconditionsSiloFacet is PreconditionsBase, Properties {
         stems[1] = stem;
         amounts[1] = amount;
     }
-
-    
 
 }

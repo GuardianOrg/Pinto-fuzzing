@@ -55,6 +55,25 @@ forge build
 
 ### Testing
 
+### Use Echidna
+1. Install Echidna, following the steps here: [Installation Guide](https://github.com/crytic/echidna#installation)
+```shell
+# Verify Installation
+echidna --version
+```
+
+2. Install dependencies
+```shell
+forge install perimetersec/fuzzlib@main --no-commit &&
+forge install foundry-rs/forge-std --no-commit &&
+mv lib markets/perps-market/lib
+```
+
+3. Run Echidna
+```shell
+echidna test/foundry/fuzzing/Fuzz.sol --contract Fuzz --config echidna.yaml
+```
+
 #### Hardhat
 
 1. Ensure you are in the root directory

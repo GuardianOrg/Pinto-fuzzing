@@ -797,7 +797,7 @@ contract FunctionCalls is FuzzBase, FuzzStorageVariables {
 
         vm.prank(currentActor);
         (success, returnData) =
-            address(diamond).call(abi.encodeWithSelector(SiloFacet.withdrawDeposit.selector, _input1, _input2, _input3, _input4));
+            address(diamond).call(abi.encodeWithSelector(SiloFacet.withdrawDeposits.selector, _input1, _input2, _input3, _input4));
     }
 
     function _transferDepositCall(address _input1, address _input2, address _input3, int256 _input4, uint256 _input5) internal returns (bool success, bytes memory returnData) {
@@ -822,7 +822,7 @@ contract FunctionCalls is FuzzBase, FuzzStorageVariables {
             address(diamond).call(abi.encodeWithSelector(SiloFacet.safeTransferFrom.selector, _input1, _input2, _input3, _input4, _input5));
     }
 
-    function _safeBatchTransferFromCall(address _input1, address _input2, uint256[] calldata _input3, uint256[] calldata _input4, bytes calldata _input5) internal returns (bool success, bytes memory returnData) {
+    function _safeBatchTransferFromCall(address _input1, address _input2, uint256[] calldata _input3, uint256[] calldata _input4, bytes calldata _input5) public returns (bool success, bytes memory returnData) {
 
         vm.prank(currentActor);
         (success, returnData) =

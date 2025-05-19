@@ -31,7 +31,6 @@ contract MockInitDiamondFuzz is InitalizeDiamond {
     address internal BEAN_WSTETH_WELL;
 
     function init(address bean_eth_well, address bean_wsteth_well) external {
-        console.log("D-1");
         BEAN_ETH_WELL = bean_eth_well;
         BEAN_WSTETH_WELL = bean_wsteth_well;
 
@@ -41,8 +40,6 @@ contract MockInitDiamondFuzz is InitalizeDiamond {
         // initalize the default state of the diamond.
         // {see. InitalizeDiamond.initalizeDiamond()}
         initalizeDiamond(BEAN, BEAN_ETH_WELL);
-
-        console.log("D_1");
 
         // Whitelist the LP well.
         whitelistLPWell(BEAN_WSTETH_WELL);
