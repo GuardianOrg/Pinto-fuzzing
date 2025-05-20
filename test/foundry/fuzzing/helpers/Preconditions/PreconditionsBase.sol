@@ -90,4 +90,35 @@ contract PreconditionsBase is BeforeAfter {
         if (uint8(b) < 10) return bytes1(uint8(b) + 0x30);
         else return bytes1(uint8(b) + 0x57);
     }
+
+    function _setWellLiquidity() internal {
+        vm.prank(currentActor);
+        beanToken.approve(address(diamond), type(uint256).max);
+
+        // add liquidity to both wells
+        _addLiquidityToWell(address(beanEthWell), 10000e6, 10 ether); //@TODO consider changing these values
+        _addLiquidityToWell(address(beanWstEthWell), 10000e6, 10 ether);
+    }
+
+    // helper function to LP well
+    function _addLiquidityToWell(address _well, uint256 _beanAmount, uint256 _token2Amount) internal {
+
+        (bool success, bytes memory returnData) = address(diamond).call(abi.encodeWithSelector(SiloGettersFacet.getNonBeanTokenAndIndexFromWell.selector, _well));
+        
+        if (!success) {
+            revert(); //@TODO add better error handeling
+        }
+
+        (address token2, ) = abi.decode(returnData, (address, uint256));
+        
+        vm.prank(ADMIN);
+        beanToken.mint(_well, _beanAmount);
+        vm.prank(ADMIN);
+        MockToken(token2).mint(_well, _token2Amount);
+
+        IWell(_well).sync(currentActor, 0);
+
+        // sync again to update reserves.
+        IWell(_well).sync(currentActor, 0);
+    }
 }

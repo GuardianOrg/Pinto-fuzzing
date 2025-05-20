@@ -122,7 +122,7 @@ contract FuzzSiloFacet is PreconditionsSiloFacet, PostconditionsSiloFacet {
     }
 
 
-    function fuzz_multi_transfer_silo_facet(uint256 _amountSalt1, uint256 _amountSalt2, uint256 _receiverSalt, uint256 _modeSalt) public setCurrentActor {
+    function fuzz_multi_transfer_silo_facet(uint256 _amountSalt1, uint256 _amountSalt2, uint256 _receiverSalt) public setCurrentActor {
 
         MockToken token = mockTokens[0];
         uint256 tokenAmount1 = fl.clamp(_amountSalt1, 1, 10000) * (10 ** token.decimals()); //@TODO consider incrementing
@@ -157,5 +157,95 @@ contract FuzzSiloFacet is PreconditionsSiloFacet, PostconditionsSiloFacet {
         _siloFacetPostCondition(success, returnData, actorsToUpdate);
         
     }
+
+    function fuzz_transfer_from_silo_facet(uint256 _amountSalt, uint256 _receiverSalt) public setCurrentActor {
+        MockToken token = mockTokens[0];
+        uint256 tokenAmount = fl.clamp(_amountSalt, 1, 10000) * (10 ** token.decimals()); //@TODO consider incrementing
+        uint256 recieverIndex = fl.clamp(_receiverSalt, 0, 2);
+
+        // verify different user is receiver
+        address receiver = USERS[recieverIndex];
+        if (receiver == currentActor) {
+            receiver = USERS[(recieverIndex + 1) % 3];
+        }
+
+        address[] memory actorsToUpdate = new address[](2);
+        actorsToUpdate[0] = currentActor;
+        actorsToUpdate[1] = receiver;
+
+        _setWellLiquidity();
+        _before(actorsToUpdate);
+
+        vm.prank(ADMIN);
+        beanToken.mint(currentActor, tokenAmount);
+
+        // deposit
+        (bool success, bytes memory returnData) = _depositCall(address(token), tokenAmount, LibTransfer.From(0));
+        if (!success) {
+            revert(); //@TODO better error handeling
+        }
+
+        (uint256 amount, uint256 bdv, int96 stem) = abi.decode(returnData, (uint256, uint256, int96));
+
+
+        (success, returnData) = _getDepositIdCall(address(token), stem);
+        if (!success) {
+            revert(); //@TODO better error handeling
+        }
+
+        uint256 _depositId = abi.decode(returnData, (uint256));
+       
+        (success, returnData) = this._safeTransferFromCall(currentActor, receiver, _depositId, amount, new bytes(0));
+
+        _siloFacetPostCondition(success, returnData, actorsToUpdate);
+    }
+
+    function fuzz_multi_transfer_from_silo_facet(uint256 _amountSalt1, uint256 _amountSalt2, uint256 _receiverSalt) public setCurrentActor {
+        MockToken token = mockTokens[0];
+        uint256 tokenAmount1 = fl.clamp(_amountSalt1, 1, 10000) * (10 ** token.decimals()); //@TODO consider incrementing
+        uint256 tokenAmount2 = fl.clamp(_amountSalt2, 1, 10000) * (10 ** token.decimals()); //@TODO consider incrementing
+        uint256 recieverIndex = fl.clamp(_receiverSalt, 0, 2);
+
+        // verify different user is receiver
+        address receiver = USERS[recieverIndex];
+        if (receiver == currentActor) {
+            receiver = USERS[(recieverIndex + 1) % 3];
+        }
+
+        address[] memory actorsToUpdate = new address[](2);
+        actorsToUpdate[0] = currentActor;
+        actorsToUpdate[1] = receiver;
+
+        _setWellLiquidity();
+        _before(actorsToUpdate);
+
+        vm.prank(ADMIN);
+        beanToken.mint(currentActor, tokenAmount1 + tokenAmount2);
+
+        (int96[] memory stems, uint256[] memory amounts) = _doubleDeposit(token, tokenAmount1, tokenAmount2);
+
+
+        (bool success, bytes memory returnData) = _getDepositIdCall(address(token), stems[0]);
+        if (!success) {
+            revert(); //@TODO better error handeling
+        }
+
+        uint256[] memory depositIds = new uint256[](2);
+
+        depositIds[0] = abi.decode(returnData, (uint256));
+
+        (success, returnData) = _getDepositIdCall(address(token), stems[1]);
+        if (!success) {
+            revert(); //@TODO better error handeling
+        }
+
+        depositIds[1] = abi.decode(returnData, (uint256));
+
+        
+        (success, returnData) = this._safeBatchTransferFromCall(currentActor, receiver, depositIds, amounts, new bytes(0));
+
+        _siloFacetPostCondition(success, returnData, actorsToUpdate);
+    }
+
 
 }

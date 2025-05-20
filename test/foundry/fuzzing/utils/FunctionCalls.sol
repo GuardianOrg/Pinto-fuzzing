@@ -815,7 +815,7 @@ contract FunctionCalls is FuzzBase, FuzzStorageVariables {
     }
 
 
-    function _safeTransferFromCall(address _input1, address _input2, uint256 _input3, uint256 _input4, bytes calldata _input5) internal returns (bool success, bytes memory returnData) {
+    function _safeTransferFromCall(address _input1, address _input2, uint256 _input3, uint256 _input4, bytes calldata _input5) public returns (bool success, bytes memory returnData) {
 
         vm.prank(currentActor);
         (success, returnData) =
