@@ -65,8 +65,7 @@ echidna --version
 2. Install dependencies
 ```shell
 forge install perimetersec/fuzzlib@main --no-commit &&
-forge install foundry-rs/forge-std --no-commit &&
-mv lib markets/perps-market/lib
+forge install foundry-rs/forge-std --no-commit
 ```
 
 3. Run Echidna
