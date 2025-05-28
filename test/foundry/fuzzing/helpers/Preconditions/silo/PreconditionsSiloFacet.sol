@@ -22,6 +22,8 @@ contract PreconditionsSiloFacet is PreconditionsBase, Properties {
         stems[0] = stem;
         amounts[0] = amount;
 
+        _moveSeason();
+
         // second deposit
         (success, returnData) = _depositCall(address(_token), _tokenAmount2, LibTransfer.From(_mode));
         if (!success) {

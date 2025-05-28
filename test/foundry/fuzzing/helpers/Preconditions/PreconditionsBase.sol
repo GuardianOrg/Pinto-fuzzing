@@ -96,8 +96,8 @@ contract PreconditionsBase is BeforeAfter {
         beanToken.approve(address(diamond), type(uint256).max);
 
         // add liquidity to both wells
-        _addLiquidityToWell(address(beanEthWell), 10000e6, 10 ether); //@TODO consider changing these values
-        _addLiquidityToWell(address(beanWstEthWell), 10000e6, 10 ether);
+        _addLiquidityToWell(address(beanEthWell), 10000e6, 100 ether); //@TODO consider changing these values
+        _addLiquidityToWell(address(beanWstEthWell), 10000e6, 100 ether);
     }
 
     // helper function to LP well
@@ -120,5 +120,56 @@ contract PreconditionsBase is BeforeAfter {
 
         // sync again to update reserves.
         IWell(_well).sync(currentActor, 0);
+    }
+
+    function _depositSilo(uint256 _tokenAmount, address _currentActor) internal returns (uint256 amount, int96 stem) {
+
+        // mint user tokens
+        vm.prank(ADMIN);
+        beanToken.mint(_currentActor, _tokenAmount);
+
+        // first deposit
+        (bool success, bytes memory returnData) = _depositCall(address(beanToken), _tokenAmount, LibTransfer.From(0));
+        if (!success) {
+            revert(); //@TODO better error handeling
+        }
+
+        (amount, , stem) = abi.decode(returnData, (uint256, uint256, int96));
+    }
+
+    function _depositWellSilo(address well, address currentActor) internal returns (uint256 amount, uint256  bdv, int96 stem) {
+        uint256 wellAmount = MockToken(well).balanceOf(currentActor);
+
+        vm.prank(currentActor);
+        MockToken(well).approve(address(diamond), type(uint256).max);
+        // first deposit
+        (bool success, bytes memory returnData) = _depositCall(address(well), wellAmount, LibTransfer.From(0));
+        if (!success) {
+            revert(); //@TODO better error handeling
+        }
+
+        (amount, bdv, stem) = abi.decode(returnData, (uint256, uint256, int96));
+    }
+
+    function _moveSeason() internal {
+        vm.warp(block.timestamp + 3600);
+
+        // update prices
+        _updateOraclePrice(cl_eth_usd, initialPrices[0], block.timestamp - 900, block.timestamp - 900);
+        _updateOraclePrice(cl_wseth_eth, initialPrices[1], block.timestamp - 900, block.timestamp - 900);
+
+        (bool success, bytes memory returnData) = _gmCall(currentActor, LibTransfer.To(0));
+        assert(success);
+    }
+
+    function _skipGermination() internal {
+        _moveSeason();
+        _moveSeason();
+        _moveSeason();
+    }
+
+    function _updateOraclePrice(MockChainlinkAggregator _oracle, int256 _newPrice, uint256 _updatedAt, uint256 _startedAt) internal {
+        uint80 latestRound = MockChainlinkAggregator(_oracle).getLatestRoundId();
+        MockChainlinkAggregator(_oracle).addRound(_newPrice, _updatedAt, _startedAt, latestRound + 1);
     }
 }

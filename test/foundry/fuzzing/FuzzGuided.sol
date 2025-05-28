@@ -4,8 +4,12 @@ pragma solidity ^0.8.0;
 import "./fuzz_calls/farm/FuzzDepotFacet.sol";
 import "./fuzz_calls/silo/FuzzSiloFacet.sol";
 import "./fuzz_calls/silo/FuzzApprovalFacet.sol";
+import "./fuzz_calls/silo/FuzzPipelineConvertFacet.sol";
+import "./fuzz_calls/field/FuzzFieldFacet.sol";
+import "./fuzz_calls/sun/FuzzSeasonFacet.sol";
 
-contract FuzzGuided is FuzzDepotFacet, FuzzSiloFacet, FuzzApprovalFacet {
+
+contract FuzzGuided is FuzzDepotFacet, FuzzSiloFacet, FuzzPipelineConvertFacet, FuzzApprovalFacet, FuzzFieldFacet, FuzzSeasonFacet {
 
     /// ===========
     /// SILO FACET
@@ -14,8 +18,8 @@ contract FuzzGuided is FuzzDepotFacet, FuzzSiloFacet, FuzzApprovalFacet {
         fuzz_deposit_silo_facet(x, y);
     }
 
-    function fuzz_guided_withdraw_silo_facet(uint256 x, uint256 y) public setCurrentActor {
-        fuzz_withdraw_silo_facet(x, y);
+    function fuzz_guided_withdraw_silo_facet(uint256 x, uint256 y, uint256 z) public setCurrentActor {
+        fuzz_withdraw_silo_facet(x, y, z);
     }
     function fuzz_guided_multi_withdraw_silo_facet(uint256 x, uint256 y, uint256 z) public setCurrentActor {
         fuzz_multi_withdraw_silo_facet(x, y, z);
@@ -36,6 +40,18 @@ contract FuzzGuided is FuzzDepotFacet, FuzzSiloFacet, FuzzApprovalFacet {
         fuzz_multi_transfer_from_silo_facet(x, y, z);
     }
 
+    function fuzz_guided_convert_B2LP_pipeline_convert_facet(uint256 w, uint256 x, uint256 y, uint256 z) public setCurrentActor() {
+        fuzz_pipeline_convert_B2LP_facet(w, x, y, z);
+    }
+
+    function fuzz_guided_convert_LP2B_pipeline_convert_facet(uint256 w, uint256 x, uint256 y, uint256 z) public setCurrentActor() {
+        fuzz_pipeline_convert_LP2B_facet(w, x, y, z);
+    }
+
+    function fuzz_guided_convert_LP2LP_pipeline_convert_facet(uint256 w, uint256 x, uint256 y, uint256 z) public setCurrentActor() {
+        fuzz_pipeline_convert_LP2LP_facet(w, x, y, z);
+    }
+
 
     /// ===============
     /// APPROVAL FACET
@@ -54,5 +70,20 @@ contract FuzzGuided is FuzzDepotFacet, FuzzSiloFacet, FuzzApprovalFacet {
     }
     function fuzz_guided_approve_all_approval_facet(uint256 x, uint256 y) public {
         fuzz_approve_all_approval_facet(x, y);
+    }
+
+
+    /// ===============
+    /// FIELD FACET
+    /// ===============
+    function fuzz_guided_sow_field_facet(uint256 x, uint32 y, uint256 z) public {
+        fuzz_sow_field(x, y, z);
+    }
+
+    /// ===============
+    /// SUN FACET
+    /// ===============
+    function fuzz_guided_gm_sun_facet(uint256 x) public {
+        fuzz_gm_sun(x);
     }
 }

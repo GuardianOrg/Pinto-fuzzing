@@ -23,7 +23,7 @@ contract FuzzApprovalFacet is PreconditionsApprovalFacet, PostconditionsApproval
         actorsToUpdate[1] = spender;
 
         _setWellLiquidity();
-        (uint256 approvalAmount, int96 stem) = _depositSilo(tokenAmount, currentActor); // @TODO check if we should be using the approval amount or not
+        (uint256 approvalAmount, int96 stem) = _depositSilo(tokenAmount, currentActor);
 
         _before(actorsToUpdate);        
 

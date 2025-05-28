@@ -774,7 +774,7 @@ contract FunctionCalls is FuzzBase, FuzzStorageVariables {
             address(diamond).call(abi.encodeWithSelector(ConvertGettersFacet.downPenalizedGrownStalk.selector, _input1, _input2, _input3));
     }
 
-    function _pipelineConvertCall(address _input1, int96[] calldata _input2, uint256[] calldata _input3, address _input4, AdvancedPipeCall[] memory  _input5) internal returns (bool success, bytes memory returnData) {
+    function _pipelineConvertCall(address _input1, int96[] memory _input2, uint256[] memory _input3, address _input4, AdvancedPipeCall[] memory  _input5) internal returns (bool success, bytes memory returnData) {
 
         vm.prank(currentActor);
         (success, returnData) =
@@ -1228,7 +1228,7 @@ contract FunctionCalls is FuzzBase, FuzzStorageVariables {
 
         vm.prank(currentActor);
         (success, returnData) =
-            address(diamond).call(abi.encodeWithSelector(bytes4(0x0c8d13f8), _input1));
+            address(diamond).call(abi.encodeWithSelector(bytes4(0x823ccbe9), _input1));
     }
 
     function _getDepositsForAccountCall(address _input1, address[] calldata _input2) internal returns (bool success, bytes memory returnData) {

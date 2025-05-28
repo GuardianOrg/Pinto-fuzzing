@@ -163,7 +163,7 @@ library LibWellMinting {
         }
 
         int256 deltaB = calculateDeltaBAtBeanIndex(well, reserves, ratios, beanIndex);
-
+        
         return (deltaB, snapshot, reserves, ratios);
     }
 

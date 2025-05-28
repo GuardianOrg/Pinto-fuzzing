@@ -90,6 +90,8 @@ import {IMockFBeanstalk as IBeanstalk} from "contracts/interfaces/IMockFBeanstal
 import {IShipmentPlanner} from "contracts/interfaces/IShipmentPlanner.sol";
 import {Distribution} from "contracts/beanstalk/facets/sun/abstract/Distribution.sol";
 
+import {Account} from "contracts/beanstalk/storage/Account.sol";
+
 import {Bean} from "contracts/tokens/Bean.sol";
 
 import {MockInitDiamondFuzz} from "../mocks/MockInitDiamondFuzz.sol";
@@ -240,8 +242,12 @@ contract FuzzStorageVariables is FuzzActors {
     IWell beanEthWell;
     IWell beanWstEthWell;
 
+    IWell[] wells;
+
     // Routes
     MockBudget mockBudget;
     MockPayback mockPayback;
     ShipmentPlanner shipPlanner;
+
+    address[] depositTokens;
 }

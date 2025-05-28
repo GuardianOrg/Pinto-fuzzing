@@ -70,7 +70,7 @@ contract FuzzSetup is FunctionCalls {
     bytes4[] ownershipSelects = [bytes4(0x4e71e0c8), bytes4(0x8da5cb5b), bytes4(0x5f504a82), bytes4(0xf2fde38b)];
 
     int256[] initialPrices = [
-        int256(1000e6), // ETH/USD
+        int256(10e6), // ETH/USD
         1e6, // wstETH/ETH
         1e6, // USDC/USD
         50000e6 // WBTC/USD
@@ -141,13 +141,16 @@ contract FuzzSetup is FunctionCalls {
 
         mockTokens = [beanMock, weth, wstEth, usdc, usdt, wbtc];
 
-        // gives ADMIN default admin role & minter role
+        // gives ADMIN default admin role
         bytes32 outerSlot = keccak256(abi.encode(beanToken.DEFAULT_ADMIN_ROLE(), uint256(5)));
         bytes32 memberSlot = keccak256(abi.encode(ADMIN, outerSlot));
         vm.store(address(beanToken), memberSlot, bytes32(uint256(1)));
 
+        // gives ADMIN & Pinto minter role
         vm.prank(ADMIN);
         beanToken.grantRole(keccak256("MINTER_ROLE"), ADMIN);
+        vm.prank(ADMIN);
+        beanToken.grantRole(keccak256("MINTER_ROLE"), address(diamond));
 
         // Deploys CP2, Well Impl, Multi Flow Pump, Mock Pump, & Aquifier
         _deployBasin();
@@ -155,6 +158,13 @@ contract FuzzSetup is FunctionCalls {
         // // Deploy bean eth well & bean wstEth well
         beanEthWell = IWell(_deployWell(weth));
         beanWstEthWell = IWell(_deployWell(wstEth));
+
+        wells.push(beanEthWell);
+        wells.push(beanWstEthWell);
+
+        depositTokens.push(address(beanToken));
+        depositTokens.push(address(beanEthWell));
+        depositTokens.push(address(beanWstEthWell));
 
         vm.prank(address(diamondCutFacet));
         IDiamondCut(address(diamond)).diamondCut(
@@ -182,7 +192,11 @@ contract FuzzSetup is FunctionCalls {
         sowBlueprintv0 = new SowBlueprintv0(address(diamond), ADMIN, address(tractorHelpers));
 
         // Create Pipeline
-        pipeLine = new Pipeline();
+        // pipeLine = new Pipeline();
+        // @note uncomment for forge tests
+        // bytes memory pipeLineCode = type(Pipeline).runtimeCode;
+        // vm.etch(0xb1bE0001f5a373b69b1E132b420e6D9687155e80, pipeLineCode);
+        pipeLine = Pipeline(payable(0xb1bE0001f5a373b69b1E132b420e6D9687155e80));
 
         // Create Oracles & set initital price
         cl_eth_usd = _deployOracle(0);
@@ -201,6 +215,9 @@ contract FuzzSetup is FunctionCalls {
         // Create Uniswap & set initital prices
         uni_wstEth_weth = _deployUniswapPool(address(wstEth), address(weth), 0);
         uni_wbtc_usdc = _deployUniswapPool(address(wbtc), address(usdc), 1);
+
+
+        vm.warp(block.timestamp + 1300);
 
     }
 
@@ -276,7 +293,12 @@ contract FuzzSetup is FunctionCalls {
         vm.label(0xBA510e11eEb387fad877812108a3406CA3f43a4B, "WELL_IMPL");
         vm.label(0xBA51AAAA95aeEFc1292515b36D86C51dC7877773, "AQUIFIER");
 
+        vm.label(address(pipeLine), "PIPELINE");
+
         vm.label(address(beanEthWell), "BEAN_ETH_WELL");
+        console.log("WELL : ", address(beanEthWell));
+        console.log("PIPELINE : ", address(pipeLine));
+        // revert();
         vm.label(address(beanWstEthWell), "BEAN_WSTETH_WELL");
               
     }
@@ -358,7 +380,7 @@ contract FuzzSetup is FunctionCalls {
         
         mockPump = new MockPump();
 
-        // get Well Implementation creation code & deploy
+        // // get Well Implementation creation code & deploy
         // bytes memory wellImplementationCreationCode = vm.getCode("./node_modules/@beanstalk/wells1.2/out/Well.sol/Well.json");
         // vm.etch(0xBA510e11eEb387fad877812108a3406CA3f43a4B, abi.encodePacked(wellImplementationCreationCode, bytes("")));
         // (success, runtimeBytecode) = 0xBA510e11eEb387fad877812108a3406CA3f43a4B.call("");
