@@ -90,6 +90,8 @@ import {IMockFBeanstalk as IBeanstalk} from "contracts/interfaces/IMockFBeanstal
 import {IShipmentPlanner} from "contracts/interfaces/IShipmentPlanner.sol";
 import {Distribution} from "contracts/beanstalk/facets/sun/abstract/Distribution.sol";
 
+import {IDiamondLoupe} from "contracts/interfaces/IDiamondLoupe.sol";
+
 import {Account} from "contracts/beanstalk/storage/Account.sol";
 
 import {Bean} from "contracts/tokens/Bean.sol";

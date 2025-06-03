@@ -17,7 +17,6 @@ abstract contract Properties_ERR is RevertHandler {
         panicCodes[2] = PANIC_ARRAY_OUT_OF_BOUNDS;
         panicCodes[3] = PANIC_ARITHMETIC;
 
-        // @TODO Add additional codes
         return panicCodes;
     }
 

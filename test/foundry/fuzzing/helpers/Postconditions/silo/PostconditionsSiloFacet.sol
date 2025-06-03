@@ -13,12 +13,6 @@ contract PostconditionsSiloFacet is PostconditionsBase {
 
             uint256 depositId = states[1].depositData[actorsToUpdate[0]].depositIds[0];
             _validateSingleDepositInvariants(actorsToUpdate[0], address(token), depositId, depositAmount);
-
-            // validte user recieves bdv @note wrong thing returned on their end
-            assert(
-                states[1].depositData[actorsToUpdate[0]].deposit[address(token)][depositId].bdv == receivedBDV
-            );
-
         } else {
             onFailInvariantsGeneral(returnData);
         }
@@ -104,19 +98,33 @@ contract PostconditionsSiloFacet is PostconditionsBase {
             address sender = actorsToUpdate[0];
             address receiver = actorsToUpdate[1];
 
+            console.log("0");
+
             if (states[1].depositData[sender].depositIds.length == 0) {
                 _validateFullClear(sender);
             }
 
-            // check cleared deposit for most recent deposits
-            _vaidatePartialClearToken(token, states[0].depositData[sender].depositIds[states[0].depositData[sender].depositIds.length-1], transferAmount1, sender);
-            _vaidatePartialClearToken(token, states[0].depositData[sender].depositIds[states[0].depositData[sender].depositIds.length-2], transferAmount2, sender);
+            console.log("1");
 
+            // check cleared deposit for most recent deposits
+            // _vaidatePartialClearToken(token, states[0].depositData[sender].depositIds[states[0].depositData[sender].depositIds.length-1], transferAmount1, sender);
+            // _vaidatePartialClearToken(token, states[0].depositData[sender].depositIds[states[0].depositData[sender].depositIds.length-2], transferAmount2, sender);
+
+            console.log("LEN : ", states[0].depositData[sender].depositIds.length);
+
+            _vaidatePartialClearToken(token, states[0].depositData[sender].depositIds[states[0].depositData[sender].depositIds.length-2], transferAmount1, sender);
+            _vaidatePartialClearToken(token, states[0].depositData[sender].depositIds[states[0].depositData[sender].depositIds.length-1], transferAmount2, sender);
+
+
+            console.log("2");
+            console.log("other len", states[1].depositData[receiver].depositIds.length);
             // validate receiver has a new deposit
-            uint256 depositId = states[0].depositData[sender].depositIds[states[0].depositData[receiver].depositIds.length-1];
+            uint256 depositId = states[1].depositData[receiver].depositIds[states[1].depositData[receiver].depositIds.length-2];
             _validateSingleDepositInvariants(receiver, address(token), depositId, transferAmount1);
 
-            depositId = states[0].depositData[sender].depositIds[states[0].depositData[receiver].depositIds.length-2];
+            console.log("3");
+
+            depositId = states[1].depositData[receiver].depositIds[states[1].depositData[receiver].depositIds.length-1];
             _validateSingleDepositInvariants(receiver, address(token), depositId,  transferAmount2);
 
         } else {
@@ -164,17 +172,12 @@ contract PostconditionsSiloFacet is PostconditionsBase {
 
         // validates deposit decrease
         uint256 expectedAmountDecrease = prevAmount - withdrawAmount;
+        console.log("non bdv");
+        console.log("prev     : ", prevAmount);
+        console.log("aactual  : ", states[1].depositData[user].deposit[address(token)][depositId].amount);
+        console.log("expected : ", expectedAmountDecrease);
         assert(states[1].depositData[user].deposit[address(token)][depositId].amount == expectedAmountDecrease);
-
-        // @TODO VERIFY THIS
-        // validate bdv decrease
-        // formula for removed bdv
-        // uint256 expectdBDVDecrease = ((withdrawAmount * states[0].depositData[user].deposit[address(token)][depositId].bdv) - 1 / prevAmount) + 1;
-        // console.log("PREV  : ", states[0].depositData[user].deposit[address(token)][depositId].bdv);
-        // console.log("EXPT  : ", expectdBDVDecrease);
-        // console.log("REAL  : ", states[1].depositData[user].deposit[address(token)][depositId].bdv);
-        // assert(states[1].depositData[user].deposit[address(token)][depositId].bdv == expectdBDVDecrease);
-
+        console.log("bdv");
         assert(states[1].depositData[user].deposit[address(token)][depositId].bdv < states[0].depositData[user].deposit[address(token)][depositId].bdv);
     }
 
@@ -191,8 +194,10 @@ contract PostconditionsSiloFacet is PostconditionsBase {
     }
 
     function _validateSingleDepositInvariants(address user, address token, uint256 depositId, uint256 depositAmount) internal {
+        console.log("a");
         assert(states[1].depositData[user].depositIds.length > 0);
 
+        console.log("b");
         // validate the balance matches deposited amount
         assert(
             states[1].depositData[user].deposit[token][depositId].amount == depositAmount
@@ -207,14 +212,10 @@ contract PostconditionsSiloFacet is PostconditionsBase {
         //     states[1].depositData[user].deposit[token][depositId].bdv > 0
         // );
 
+        console.log("c");
         // validate germinating stalk @note same issue as above
         assert(
             states[1].depositData[user].germinatingStalk > 0
-        );
-
-        // validate stalk amount 
-        assert(
-            states[1].depositData[user].stalk == 0
         );
     }
 

@@ -96,7 +96,7 @@ contract PreconditionsBase is BeforeAfter {
         beanToken.approve(address(diamond), type(uint256).max);
 
         // add liquidity to both wells
-        _addLiquidityToWell(address(beanEthWell), 10000e6, 100 ether); //@TODO consider changing these values
+        _addLiquidityToWell(address(beanEthWell), 10000e6, 100 ether);
         _addLiquidityToWell(address(beanWstEthWell), 10000e6, 100 ether);
     }
 
@@ -104,10 +104,7 @@ contract PreconditionsBase is BeforeAfter {
     function _addLiquidityToWell(address _well, uint256 _beanAmount, uint256 _token2Amount) internal {
 
         (bool success, bytes memory returnData) = address(diamond).call(abi.encodeWithSelector(SiloGettersFacet.getNonBeanTokenAndIndexFromWell.selector, _well));
-        
-        if (!success) {
-            revert(); //@TODO add better error handeling
-        }
+        assert(success);
 
         (address token2, ) = abi.decode(returnData, (address, uint256));
         
@@ -130,9 +127,7 @@ contract PreconditionsBase is BeforeAfter {
 
         // first deposit
         (bool success, bytes memory returnData) = _depositCall(address(beanToken), _tokenAmount, LibTransfer.From(0));
-        if (!success) {
-            revert(); //@TODO better error handeling
-        }
+        assert(success);
 
         (amount, , stem) = abi.decode(returnData, (uint256, uint256, int96));
     }
@@ -144,9 +139,7 @@ contract PreconditionsBase is BeforeAfter {
         MockToken(well).approve(address(diamond), type(uint256).max);
         // first deposit
         (bool success, bytes memory returnData) = _depositCall(address(well), wellAmount, LibTransfer.From(0));
-        if (!success) {
-            revert(); //@TODO better error handeling
-        }
+        assert(success);
 
         (amount, bdv, stem) = abi.decode(returnData, (uint256, uint256, int96));
     }
@@ -171,5 +164,19 @@ contract PreconditionsBase is BeforeAfter {
     function _updateOraclePrice(MockChainlinkAggregator _oracle, int256 _newPrice, uint256 _updatedAt, uint256 _startedAt) internal {
         uint80 latestRound = MockChainlinkAggregator(_oracle).getLatestRoundId();
         MockChainlinkAggregator(_oracle).addRound(_newPrice, _updatedAt, _startedAt, latestRound + 1);
+    }
+
+    function _addField(uint32 _temp) internal returns (uint256 amount, int96 stem) {
+
+        (bool success, bytes memory returnData) = _fieldCountCall();
+        uint256 nextField = abi.decode(returnData, (uint256));
+        
+        vm.prank(address(diamond));
+        (success, returnData) = address(diamond).call(abi.encodeWithSelector(FieldFacet.addField.selector));
+        assert(success);
+
+        vm.prank(address(diamond));
+        (success, returnData) = address(diamond).call(abi.encodeWithSelector(FieldFacet.setActiveField.selector, nextField, _temp));
+        assert(success);
     }
 }

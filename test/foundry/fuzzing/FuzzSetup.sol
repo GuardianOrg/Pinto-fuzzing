@@ -36,7 +36,7 @@ import {LibDiamond} from "contracts/libraries/LibDiamond.sol";
 contract FuzzSetup is FunctionCalls {
 
     MockUniswapV3Factory public uniFactory;
-    uint256[][] public uniPriceData = [[uint256(1e18), 18], [uint256(500e6), 8]];
+    uint256[][] uniPriceData = [[uint256(1e18), 18], [uint256(500e6), 8]];
 
     function fuzzSetup() internal {
         deploySampleContract();
@@ -128,7 +128,7 @@ contract FuzzSetup is FunctionCalls {
 
 
         // Create Tokens
-        // // @note uncomment for foundry tests
+        // @note uncomment for foundry tests
         // bytes memory bytecode = type(Bean).runtimeCode; // for foundry
         // vm.etch(0xBEA0000029AD1c77D3d5D23Ba2D8893dB9d1Efab, bytecode);
         beanToken = Bean(0xBEA0000029AD1c77D3d5D23Ba2D8893dB9d1Efab);
@@ -367,7 +367,7 @@ contract FuzzSetup is FunctionCalls {
         // vm.etch(0xBA510C20FD2c52E4cb0d23CFC3cCD092F9165a6E, runtimeBytecode);
         cp2 = ICP2(0xBA510C20FD2c52E4cb0d23CFC3cCD092F9165a6E);
 
-        // // get Multi Flow Pump creation code & deploy
+        // get Multi Flow Pump creation code & deploy
         // bytes memory multiFlowPumpCreationCode = vm.getCode("./node_modules/@beanstalk/wells1.2/out/MultiFlowPump.sol/MultiFlowPump.json");
         // vm.etch(0xBA510f10E3095B83a0F33aa9ad2544E22570a87C, abi.encodePacked(multiFlowPumpCreationCode, abi.encode(bytes16(0x3ff50624dd2f1a9fbe76c8b439581062), bytes16(0x3ff505e1d27a3ee9bffd7f3dd1a32671), uint256(12), bytes16(0x3ffeef368eb04325c526c2246eec3e55))));
         // (success, runtimeBytecode) = 0xBA510f10E3095B83a0F33aa9ad2544E22570a87C.call("");
@@ -380,7 +380,7 @@ contract FuzzSetup is FunctionCalls {
         
         mockPump = new MockPump();
 
-        // // get Well Implementation creation code & deploy
+        // get Well Implementation creation code & deploy
         // bytes memory wellImplementationCreationCode = vm.getCode("./node_modules/@beanstalk/wells1.2/out/Well.sol/Well.json");
         // vm.etch(0xBA510e11eEb387fad877812108a3406CA3f43a4B, abi.encodePacked(wellImplementationCreationCode, bytes("")));
         // (success, runtimeBytecode) = 0xBA510e11eEb387fad877812108a3406CA3f43a4B.call("");

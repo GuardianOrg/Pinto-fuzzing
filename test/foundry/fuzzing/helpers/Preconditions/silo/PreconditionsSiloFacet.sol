@@ -14,9 +14,7 @@ contract PreconditionsSiloFacet is PreconditionsBase, Properties {
 
         // first deposit
         (bool success, bytes memory returnData) = _depositCall(address(_token), _tokenAmount1, LibTransfer.From(_mode));
-        if (!success) {
-            revert(); //@TODO better error handeling
-        }
+        assert(success);
         (uint256 amount, , int96 stem) = abi.decode(returnData, (uint256, uint256, int96));
 
         stems[0] = stem;
@@ -26,9 +24,7 @@ contract PreconditionsSiloFacet is PreconditionsBase, Properties {
 
         // second deposit
         (success, returnData) = _depositCall(address(_token), _tokenAmount2, LibTransfer.From(_mode));
-        if (!success) {
-            revert(); //@TODO better error handeling
-        }
+        assert(success);
         (amount, ,stem) = abi.decode(returnData, (uint256, uint256, int96));
 
         stems[1] = stem;

@@ -20,7 +20,6 @@ contract FunctionCalls is FuzzBase, FuzzStorageVariables {
             address(diamond).call(abi.encodeWithSelector(DepotFacet.multiPipe.selector, _input));
     }
 
-    //@TODO look into this being payable
     function _advancedPipeCall(PipeCall[] calldata _input1, uint256 _input2) internal returns (bool success, bytes memory returnData) {
 
         vm.prank(currentActor);
@@ -29,7 +28,6 @@ contract FunctionCalls is FuzzBase, FuzzStorageVariables {
     }
 
 
-    //@TODO look into this being payable
     function _etherPipeCall(PipeCall[] calldata _input1, uint256 _input2) internal returns (bool success, bytes memory returnData) {
 
         vm.prank(currentActor);
@@ -311,7 +309,7 @@ contract FunctionCalls is FuzzBase, FuzzStorageVariables {
             address(diamond).call(abi.encodeWithSelector(FieldFacet.sowWithMin.selector, _input1, _input2, _input3, _input4));
     }
 
-    function _harvestCall(uint256 _input1, uint256[] calldata _input2, LibTransfer.To _input3) internal returns (bool success, bytes memory returnData) {
+    function _harvestCall(uint256 _input1, uint256[] calldata _input2, LibTransfer.To _input3) public returns (bool success, bytes memory returnData) {
 
         vm.prank(currentActor);
         (success, returnData) =

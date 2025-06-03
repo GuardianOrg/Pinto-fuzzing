@@ -7,6 +7,7 @@ contract BeforeAfter is FuzzSetup {
 
     struct DepositData {
         uint256[] depositIds;
+        mapping(uint256 => address) id2token;
         mapping(address token => mapping(uint256 => Deposit)) deposit;
         uint256 matureGerminatingStalk;
         uint256 youngGerminatingStalk;
@@ -26,6 +27,11 @@ contract BeforeAfter is FuzzSetup {
         uint128 bdv;
     }
 
+    struct Plot {
+        uint256 index;
+        uint256 pods;
+    }
+
     struct DepositTotals {
         uint256 totalTokenDeposited;
         uint256 totalBDV;
@@ -38,6 +44,11 @@ contract BeforeAfter is FuzzSetup {
     struct State {
         mapping(address => DepositData) depositData;
         mapping(address => DepositTotals) tokenDepositTotals;
+        mapping(address => mapping(uint256 fieldId => uint256)) userPodBalance;
+        mapping(address => mapping(uint256 fieldId => Plot[])) userPlots;
+        mapping(address user => mapping(address => uint256)) tokenBalances;
+        mapping(uint256 fieldId => uint256) harvestable;
+        mapping(uint256 fieldId => uint256) harvested;
         uint256 totalSiloDeposit;
         uint256 totalRoots;
         uint256 totalEarnedBeans;
@@ -45,6 +56,11 @@ contract BeforeAfter is FuzzSetup {
         uint256 getTotalGerminatingStalk;
         uint256 matureGerminatingStalk;
         uint256 youngGerminatingStalk;
+        uint256 remainingPods;
+        uint256 activeField;
+        uint256 beanSupply;
+        uint256 currSeason;
+        uint256 currSeasonTime;
     }
 
     mapping(uint8 => State) states;
@@ -59,8 +75,8 @@ contract BeforeAfter is FuzzSetup {
     }
 
     function _setStates(uint8 callNum, address[] memory actors) internal {
-        _processActors(callNum, actors);
         _updateCommonState(callNum);
+        _processActors(callNum, actors);
     }
 
     function _processActors(uint8 callNum, address[] memory actors) private {
@@ -70,8 +86,11 @@ contract BeforeAfter is FuzzSetup {
     }
 
     function _setActorState(uint8 callNum, address actor) internal virtual {
+        _updateFieldData(callNum, actor);
         _updateDepositData(callNum, actor);
     }
+
+    
 
     // updates common state for protocol
     function _updateCommonState(uint8 callNum) private {
@@ -130,7 +149,65 @@ contract BeforeAfter is FuzzSetup {
             states[callNum].youngGerminatingStalk
         ) = abi.decode(returnData, (uint256, uint256));
 
+
+        // update remainingPods
+        (success, returnData) = _remainingPodsCall();
+        states[callNum].remainingPods = abi.decode(returnData, (uint256));
+
+        // update the active field
+        (success, returnData) = _activeFieldCall();
+        states[callNum].activeField = abi.decode(returnData, (uint256));
+
+        // update bean totalSupply
+        states[callNum].beanSupply = beanToken.totalSupply();
+
+        // update current season
+        (success, returnData) = _seasonTimeCall();
+        states[callNum].currSeason = abi.decode(returnData, (uint256));
+
+        // update current season timestamp
+        (success, returnData) = _getSeasonTimestampCall();
+        states[callNum].currSeasonTime = abi.decode(returnData, (uint256));
+
+        // update harvestable for the season
+        (success, returnData) = _totalHarvestableCall(states[callNum].activeField);
+        states[callNum].harvestable[states[callNum].activeField] = abi.decode(returnData, (uint256));
+
+        // update harvested for the season
+        (success, returnData) = _totalHarvestedCall(states[callNum].activeField);
+        states[callNum].harvested[states[callNum].activeField] = abi.decode(returnData, (uint256));
+
+        // update token balances
+        _updateAllTokenBalances(callNum);
+
         // _logicalCoverage(callNum);
+    }
+
+    // updates ERC-20 balances for significant addresses
+    function _updateAllTokenBalances(uint8 callNum) internal {
+        for(uint256 i; i < mockTokens.length; ++i) {
+            for(uint256 j; j < USERS.length; ++j) {
+                states[callNum].tokenBalances[USERS[j]][address(mockTokens[i])] = mockTokens[i].balanceOf(USERS[j]);
+            }
+
+            states[callNum].tokenBalances[address(diamond)][address(mockTokens[i])] = mockTokens[i].balanceOf(address(diamond));
+            states[callNum].tokenBalances[address(beanEthWell)][address(mockTokens[i])] = mockTokens[i].balanceOf(address(beanEthWell));
+            states[callNum].tokenBalances[address(beanWstEthWell)][address(mockTokens[i])] = mockTokens[i].balanceOf(address(beanWstEthWell));
+        }
+    }
+
+    // updates field data for user
+    function _updateFieldData(uint8 callNum, address actor) internal {
+        (bool success, bytes memory returnData) = _balanceOfPodsCall(actor, states[callNum].activeField);
+        states[callNum].userPodBalance[actor][states[callNum].activeField] = abi.decode(returnData, (uint256));
+
+        (success, returnData) = _getPlotsFromAccountCall(actor, states[callNum].activeField);
+        Plot[] memory plots = abi.decode(returnData, (Plot[]));
+        delete states[callNum].userPlots[actor][states[callNum].activeField];
+
+        for (uint256 i; i < plots.length; ++i) {
+            states[callNum].userPlots[actor][states[callNum].activeField].push(plots[i]);
+        }
     }
 
     // updates state for usre's deposits
@@ -146,6 +223,8 @@ contract BeforeAfter is FuzzSetup {
             for (uint256 j; j < allDeposits[i].depositIds.length; ++j) {
                 // add deposit id
                 states[callNum].depositData[actor].depositIds.push(allDeposits[i].depositIds[j]);
+                // map id to token
+                states[callNum].depositData[actor].id2token[allDeposits[i].depositIds[j]] = allDeposits[i].token;
                 // map deposit data to id
                 states[callNum]
                     .depositData[actor]

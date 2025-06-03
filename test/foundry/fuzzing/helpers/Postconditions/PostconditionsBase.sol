@@ -6,8 +6,6 @@ import "../../properties/Properties.sol";
 contract PostconditionsBase is Properties {
 
 
-
-    // @TODO add properties here
     function onSuccessInvariantsGeneral(bytes memory returnData) internal {
         // invariant_GLOB_01();
     }

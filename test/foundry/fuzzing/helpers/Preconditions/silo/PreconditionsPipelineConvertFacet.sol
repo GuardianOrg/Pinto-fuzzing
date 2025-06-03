@@ -7,8 +7,9 @@ import "../../../properties/Properties.sol";
 contract PreconditionsPipelineConvertFacet is PreconditionsBase, Properties {
 
     function _createBeanToLPPipeCalls(
-        uint256 amountOfBean
-    ) internal view returns (AdvancedPipeCall[] memory output) {
+        uint256 amountOfBean,
+        uint256 extraPipes
+    ) internal returns (AdvancedPipeCall[] memory output) {
         // first setup the pipeline calls
 
         // setup approve max call
@@ -50,11 +51,81 @@ contract PreconditionsPipelineConvertFacet is PreconditionsBase, Properties {
             abi.encode(0) // clipboard
         );
 
+        for(uint256 i; i < extraPipes; ++i) {
+            advancedPipeCalls[callCounter++] = _addPipeCall(extraPipes);
+        }
+
         assembly {
             mstore(advancedPipeCalls, callCounter)
         }
 
         return advancedPipeCalls;
+    }
+
+    
+    // adds extra pipe calls targeted at the diamond
+    function _addPipeCall(uint256 _pipeSalt) internal returns (AdvancedPipeCall memory pipeCall) {
+        bytes4 selector;
+
+        bytes4[] memory selectors = _getAllSelectors();
+        uint256 selecLen = selectors.length;
+
+
+        uint256 i;
+        while (false) {
+
+            // get random selector
+            bytes4 selector = selectors[ uint256(keccak256(abi.encode(i, _pipeSalt))) % selecLen ];
+
+            // verify it is not a view function
+            if(_isStateChanging(selector)) {
+
+                // create random call for selector
+                bytes memory reenterCalldata = abi.encodeWithSelector(
+                    SiloFacet.deposit.selector,
+                    _emptyBytes(200)
+                );
+
+                pipeCall = AdvancedPipeCall(
+                    address(diamond), // target
+                    reenterCalldata, // calldata
+                    abi.encode(0) // clipboard
+                );
+                break;
+            }
+        }
+
+    }
+
+    // gets all selectors for facets
+   function _getAllSelectors() internal view returns (bytes4[] memory selectors) {
+        IDiamondLoupe.Facet[] memory facets = IDiamondLoupe(address(diamond)).facets();
+        uint256 total;
+        for (uint i; i < facets.length; i++) {
+            total += facets[i].functionSelectors.length;
+        }
+
+        selectors = new bytes4[](total);
+        uint k;
+        for (uint i; i < facets.length; i++) {
+            for (uint j; j < facets[i].functionSelectors.length; j++) {
+                selectors[k++] = facets[i].functionSelectors[j];
+            }
+        }
+    }
+
+    // check if function is view or pure
+    function _isStateChanging(bytes4 selector) internal view returns (bool) {
+        (bool success, bytes memory returnData) = address(diamond).staticcall(abi.encodeWithSelector(selector, _emptyBytes(200)));
+        return !success;
+    }
+
+    // generate empty calldata
+    function _emptyBytes(uint256 len) internal view returns (bytes memory b) {
+        b = new bytes(len);
+        for (uint i = 1; i < len; i++) {
+            b[i] = bytes1(uint8(0));
+        }
     }
 
 

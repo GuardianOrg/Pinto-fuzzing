@@ -14,19 +14,19 @@ contract FoundryPlayground is FuzzGuided {
     /// ===========
 
     function test_silo_deposit() public {
-        fuzz_guided_deposit_silo(1, 2);
+        fuzz_guided_deposit_silo(1);
     }
 
     function test_silo_withdrawM() public {
-        fuzz_withdraw_silo_facet(1, 2, 3);
+        fuzz_withdraw_silo_facet(1, 2);
     }
 
     function test_silo_withdraws() public {
-        fuzz_multi_withdraw_silo_facet(1, 2, 3);
+        fuzz_multi_withdraw_silo_facet(1, 2);
     }
 
     function test_silo_transferM() public {
-        fuzz_transfer_deposit_silo_facet(1, 2, 3);
+        fuzz_transfer_deposit_silo_facet(1, 2);
     }
 
     function test_silo_multi_transfer() public {
@@ -54,6 +54,10 @@ contract FoundryPlayground is FuzzGuided {
         fuzz_guided_convert_LP2LP_pipeline_convert_facet(1, 2, 3, 4);
     }
 
+    function test_pipeline_convert_reenter() public {
+        fuzz_guided_pipeline_convert_reenter(1, 2, 3, 4);
+    }
+
 
     /// ===============
     /// APPROVAL FACET
@@ -74,14 +78,25 @@ contract FoundryPlayground is FuzzGuided {
         fuzz_guided_approve_all_approval_facet(1, 2);
     }
 
-    
-
 
     /// ===============
     /// FIELD FACET
     /// ===============
-    function test_sowM() public {
+    function test_sow() public {
         fuzz_guided_sow_field_facet(1, 2, 3);
+    }
+
+    function test_sow_min() public {
+        fuzz_guided_sow_min_field_facet(1, 2, 3, 4);
+    }
+
+
+    function test_harvest() public {
+        fuzz_guided_harvest_field_facet(1, 2, 3, 4);
+    }
+
+    function test_addField() public {
+        fuzz_guided_add_field_facet(1);
     }
 
     /// ===============
@@ -91,7 +106,4 @@ contract FoundryPlayground is FuzzGuided {
         fuzz_guided_gm_sun_facet(1);
     }
     
-    
-    
-
 }

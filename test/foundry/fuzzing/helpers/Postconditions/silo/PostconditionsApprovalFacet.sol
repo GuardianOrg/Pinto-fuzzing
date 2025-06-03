@@ -74,9 +74,8 @@ contract PostconditionsApprovalFacet is PostconditionsBase {
 
         // get depositId
         (bool success, bytes memory returnData) = _getDepositIdCall(address(token), stem);
-        if (!success) {
-            revert(); //@TODO better error handeling
-        }
+        assert(success);
+
         uint256 depositId = abi.decode(returnData, (uint256));
 
         // make transfer
@@ -91,9 +90,8 @@ contract PostconditionsApprovalFacet is PostconditionsBase {
         address spender = actorsToUpdate[1];
 
         (bool success, bytes memory returnData) = _isApprovedForAllCall(owner, spender);
-        if (!success) {
-            revert(); //@TODO better error handeling
-        }
+        assert(success);
+        
         bool isApproved = abi.decode(returnData, (bool));
         assert(isApproved);
     }

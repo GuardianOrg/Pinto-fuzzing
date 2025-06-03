@@ -9,7 +9,7 @@ contract FuzzApprovalFacet is PreconditionsApprovalFacet, PostconditionsApproval
     function fuzz_approve_approval_facet(uint256 _amountSalt, uint256 _receiverSalt) public setCurrentActor {
 
         MockToken token = mockTokens[0];
-        uint256 tokenAmount = fl.clamp(_amountSalt, 1, 10000) * (10 ** token.decimals()); //@TODO consider incrementing
+        uint256 tokenAmount = fl.clamp(_amountSalt, 1, 10000) * (10 ** token.decimals());
         uint256 recieverIndex = fl.clamp(_receiverSalt, 0, 2);
 
         // verify different user is receiver
@@ -36,7 +36,7 @@ contract FuzzApprovalFacet is PreconditionsApprovalFacet, PostconditionsApproval
     function fuzz_increase_approval_facet(uint256 _amountSalt, uint256 _receiverSalt) public setCurrentActor {
 
         MockToken token = mockTokens[0];
-        uint256 tokenAmount = fl.clamp(_amountSalt, 1, 10000) * (10 ** token.decimals()); //@TODO consider incrementing
+        uint256 tokenAmount = fl.clamp(_amountSalt, 1, 10000) * (10 ** token.decimals());
         uint256 recieverIndex = fl.clamp(_receiverSalt, 0, 2);
 
         // verify different user is receiver
@@ -71,7 +71,7 @@ contract FuzzApprovalFacet is PreconditionsApprovalFacet, PostconditionsApproval
     function fuzz_decrease_approval_facet(uint256 _amountSalt, uint256 _receiverSalt) public setCurrentActor {
 
         MockToken token = mockTokens[0];
-        uint256 tokenAmount = fl.clamp(_amountSalt, 1, 10000) * (10 ** token.decimals()); //@TODO consider incrementing
+        uint256 tokenAmount = fl.clamp(_amountSalt, 1, 10000) * (10 ** token.decimals());
         uint256 recieverIndex = fl.clamp(_receiverSalt, 0, 2);
 
         // verify different user is receiver
@@ -102,7 +102,7 @@ contract FuzzApprovalFacet is PreconditionsApprovalFacet, PostconditionsApproval
     function fuzz_approve_all_approval_facet(uint256 _amountSalt, uint256 _receiverSalt) public setCurrentActor {
 
         MockToken token = mockTokens[0];
-        uint256 tokenAmount = fl.clamp(_amountSalt, 1, 10000) * (10 ** token.decimals()); //@TODO consider incrementing
+        uint256 tokenAmount = fl.clamp(_amountSalt, 1, 10000) * (10 ** token.decimals());
         uint256 recieverIndex = fl.clamp(_receiverSalt, 0, 2);
 
         // verify different user is receiver
